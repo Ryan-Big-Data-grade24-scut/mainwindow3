@@ -85,5 +85,8 @@
     <None Include="..\.gitignore">
       <Filter>Git</Filter>
     </None>
+    <None Include="..\README.md">
+      <Filter>Git</Filter>
+    </None>
   </ItemGroup>
 </Project>
