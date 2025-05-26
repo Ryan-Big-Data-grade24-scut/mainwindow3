@@ -1,47 +1,53 @@
-﻿# 首先忽略所有文件和目录
-*
-
-# 保留 .gitignore 文件本身
-!.gitignore
-
-# 保留 mainwindow 目录下的特定文件类型
-!mainwindow/
-!mainwindow/*.cpp
-!mainwindow/*.h
-!mainwindow/*.ui
-
-# 特别处理 uic 子目录
-!mainwindow/x64/Debug/qt/uic/
-
-# 忽略 mainwindow 目录下的其他文件
-mainwindow/*.*
-!mainwindow/*.cpp
-!mainwindow/*.h
-!mainwindow/*.ui
-
-# 忽略特定的 JSON 文件
-mainwindow/*.json
-
-# 忽略 Visual Studio 项目文件
-*.sln
-*.vcxproj
-*.vcxproj.filters
-*.vcxproj.user
-*.qrc
-
-# 忽略编译输出目录
+﻿# 忽略 Visual Studio 构建输出
+[Bb]in/
+[Oo]bj/
 [Dd]ebug/
 [Rr]elease/
 x64/
-
-# 忽略 Qt 生成的中间文件 (除了 uic)
-mainwindow/x64/Debug/qt/moc/
-mainwindow/x64/Debug/qt/qmake/
-mainwindow/x64/Debug/qt/rcc/
-*.moc
-*.obj
 *.pdb
 *.ilk
-*.log
-*.idb
+*.exp
+*.lib
+*.exe
 *.tlog
+*.log
+
+# 忽略 Qt 自动生成的文件
+ui_*.h
+moc_*.cpp
+qrc_*.cpp
+*.moc
+*.qmlc
+*.jsc
+
+# 忽略 Qt 临时文件
+*.autosave
+*.user
+*.pro.user
+*.qmake.stash
+
+# 忽略 Visual Studio 用户文件和缓存
+.vs/
+*.suo
+*.wsuo
+*.VC.db
+*.VC.db-shm
+*.VC.db-wal
+*.VC.opendb
+*.ipch
+*.sdf
+*.opensdf
+*.sqlite
+*.vcxproj.user
+
+# 忽略本地历史记录
+*.json
+!README.md
+!.gitattributes
+
+# 忽略系统文件
+.DS_Store
+Thumbs.db
+
+# 忽略临时副本的 VS 项目文件
+*.vcxproj
