@@ -1,4 +1,4 @@
-//ImgProcessor.h
+#pragma once
 #include <vector>
 #include <memory>
 #include <utility>
@@ -11,7 +11,7 @@
 class ImageProcessor : public QObject {
     Q_OBJECT
 public:
-    // 构造时自动装入所有工具
+    // 构造时自动装入所有工具8888 
     explicit ImageProcessor(QObject* parent = nullptr, MainWindow* window = nullptr);
 
     // 其他成员保持不变...
@@ -22,7 +22,7 @@ signals:
 
 public:
     /*
-    1. 模板的声明方式：
+    /*1. 模板的声明方式：
         templete<>
         函数/类
 
