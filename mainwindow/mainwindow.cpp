@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "ImgProcessor.h"
 #include <QMessageBox>
 #include <QScrollBar>
 #include <QFileDialog>
@@ -38,6 +37,8 @@
 #include <QImage>
 #include <QThread>
 #include <QMetaObject>
+#include "OllamaProcessor.h"
+#include "ImgProcessor.h"
 
 
 
@@ -75,12 +76,16 @@ MainWindow::MainWindow(QWidget* parent) :
     // 按钮绑定
     connect(ui->pushButton_toPage4, &QPushButton::clicked, this, &MainWindow::on_pushButton_toPage4_clicked);
     connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::on_pushButton_clicked);
-    connect(ui->pushButton_ollama, &QPushButton::clicked, this, &MainWindow::startOllamaInteraction);
-    connect(ui->listWidget_history, &QListWidget::itemClicked, this, &MainWindow::on_historyItemClicked);
-    connect(ui->lineEdit_prompt, &QLineEdit::returnPressed, this, &MainWindow::startOllamaInteraction); // 新增
-    connect(ui->pushButton_addFavorite, &QPushButton::clicked, this, &MainWindow::on_pushButton_addFavorite_clicked);
-    connect(ui->pushButton_removeFavorite, &QPushButton::clicked, this, &MainWindow::on_pushButton_removeFavorite_clicked);
-    connect(ui->listWidget_favorites, &QListWidget::itemClicked, this, &MainWindow::on_favoriteItemClicked);
+    //connect(ui->pushButton_ollama, &QPushButton::clicked, this, &MainWindow::startOllamaInteraction);
+    //connect(ui->listWidget_history, &QListWidget::itemClicked, this, &MainWindow::on_historyItemClicked);
+    //connect(ui->lineEdit_prompt, &QLineEdit::returnPressed, this, &MainWindow::startOllamaInteraction); // 新增
+    //connect(ui->pushButton_addFavorite, &QPushButton::clicked, this, &MainWindow::on_pushButton_addFavorite_clicked);
+    //connect(ui->pushButton_removeFavorite, &QPushButton::clicked, this, &MainWindow::on_pushButton_removeFavorite_clicked);
+    //connect(ui->listWidget_favorites, &QListWidget::itemClicked, this, &MainWindow::on_favoriteItemClicked);
+    connect(ui->pushButton_2, &QPushButton::clicked, this, &MainWindow::on_pushButton_2_clicked);
+    connect(ui->pushButton_3, &QPushButton::clicked, this, &MainWindow::on_pushButton_3_clicked);
+    connect(ui->pushButton_4, &QPushButton::clicked, this, &MainWindow::on_pushButton_4_clicked);
+    connect(ui->pushButton_history, &QPushButton::clicked, this, &MainWindow::on_pushButton_history_clicked);
     //connect(ui->pushButton_gaussian, &QPushButton::clicked, this, &MainWindow::on_pushButton_gaussian_clicked);
     /*
     注意：
@@ -125,6 +130,9 @@ MainWindow::MainWindow(QWidget* parent) :
     m_processor = std::make_unique<ImageProcessor>(this, this);  // 传递this指针
     m_processor->connectAll();
 
+    ollamaProcessor = std::make_unique<OllamaProcessor>(this);
+    ollamaProcessor->connectAll();
+
 
 
     //connect(ui->pushButton_gray, &QPushButton::clicked, this, &MainWindow::on_pushButton_gray_clicked);
@@ -135,14 +143,14 @@ MainWindow::MainWindow(QWidget* parent) :
     loadFavoritesHistory();
 
     // 新增连接
-    connect(ui->pushButton_search, &QPushButton::clicked,
+    /*connect(ui->pushButton_search, &QPushButton::clicked,
         this, &MainWindow::on_pushButton_search_clicked);
     connect(ui->pushButton_rag, &QPushButton::clicked, [this]() {
         if (!currentSearchQuery.isEmpty()) {
             QString answer = ragWithOllamaAndSearXNG(currentSearchQuery);
             ui->textBrowser_results->append("\nAI分析结果:\n" + answer);
         }
-        });
+        });*/
 }
 
 MainWindow::~MainWindow()
@@ -402,73 +410,73 @@ void MainWindow::on_esc_pressed()
     }
 }
 
-void MainWindow::startOllamaInteraction()
-{
-    QString prompt = ui->lineEdit_prompt->text().trimmed();
-    if (prompt.isEmpty()) {
-        QMessageBox::warning(this, tr("警告"), tr("提示词不能为空！"));
-        return;
-    }
-
-    QUrl url("http://localhost:11434/api/generate");
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-    QJsonObject json;
-    json.insert("model", "deepseek-r1:1.5b");
-    json.insert("prompt", prompt);
-    json.insert("max_tokens", 150);
-
-    QNetworkReply* reply = networkManager->post(request, QJsonDocument(json).toJson());
-
-    connect(reply, &QNetworkReply::finished, this, [this, reply, prompt]() {
-        QString response;
-        if (reply->error() == QNetworkReply::NoError) {
-            QByteArray responseData = reply->readAll();
-            response = parseOllamaResponse(responseData);
-        }
-        else {
-            qDebug() << "网络错误:" << reply->errorString();
-            ui->textEdit_result->setText("网络错误: " + reply->errorString());
-            return;
-        }
-
-        QStringList lines = response.split("\n");
-        QString result, resp;
-        for (const QString& line : lines) {
-            QJsonParseError error;
-            QJsonDocument doc = QJsonDocument::fromJson(line.toUtf8(), &error);
-            if (error.error == QJsonParseError::NoError && doc.isObject()) {
-                QJsonObject obj = doc.object();
-                if (obj.contains("response") && obj.contains("done")) {
-                    bool done = obj["done"].toBool();
-                    resp = obj["response"].toString();
-                    result += resp;
-                    if (done) break;
-                }
-            }
-        }
-
-        // 显示结果
-        ui->textEdit_result->setText(result);
-
-        // 保存历史
-        ollamaHistory.append(qMakePair(prompt, result));
-        ui->listWidget_history->addItem(prompt.left(30)); // 显示前30个字符
-        // ? 清空输入框
-        ui->lineEdit_prompt->clear();
-        });
-}
-
-void MainWindow::on_historyItemClicked(QListWidgetItem* item)
-{
-    int index = ui->listWidget_history->row(item);
-    if (index >= 0 && index < ollamaHistory.size()) {
-        QString q = ollamaHistory[index].first;
-        QString a = ollamaHistory[index].second;
-        ui->textEdit_result->setText("Q: " + q + "\n\nA: " + a);
-    }
-}
+//void MainWindow::startOllamaInteraction()
+//{
+//    QString prompt = ui->lineEdit_prompt->text().trimmed();
+//    if (prompt.isEmpty()) {
+//        QMessageBox::warning(this, tr("警告"), tr("提示词不能为空！"));
+//        return;
+//    }
+//
+//    QUrl url("http://localhost:11434/api/generate");
+//    QNetworkRequest request(url);
+//    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+//
+//    QJsonObject json;
+//    json.insert("model", "deepseek-r1:1.5b");
+//    json.insert("prompt", prompt);
+//    json.insert("max_tokens", 150);
+//
+//    QNetworkReply* reply = networkManager->post(request, QJsonDocument(json).toJson());
+//
+//    connect(reply, &QNetworkReply::finished, this, [this, reply, prompt]() {
+//        QString response;
+//        if (reply->error() == QNetworkReply::NoError) {
+//            QByteArray responseData = reply->readAll();
+//            response = parseOllamaResponse(responseData);
+//        }
+//        else {
+//            qDebug() << "网络错误:" << reply->errorString();
+//            ui->textEdit_result->setText("网络错误: " + reply->errorString());
+//            return;
+//        }
+//
+//        QStringList lines = response.split("\n");
+//        QString result, resp;
+//        for (const QString& line : lines) {
+//            QJsonParseError error;
+//            QJsonDocument doc = QJsonDocument::fromJson(line.toUtf8(), &error);
+//            if (error.error == QJsonParseError::NoError && doc.isObject()) {
+//                QJsonObject obj = doc.object();
+//                if (obj.contains("response") && obj.contains("done")) {
+//                    bool done = obj["done"].toBool();
+//                    resp = obj["response"].toString();
+//                    result += resp;
+//                    if (done) break;
+//                }
+//            }
+//        }
+//
+//        // 显示结果
+//        ui->textEdit_result->setText(result);
+//
+//        // 保存历史
+//        ollamaHistory.append(qMakePair(prompt, result));
+//        ui->listWidget_history->addItem(prompt.left(30)); // 显示前30个字符
+//        // ? 清空输入框
+//        ui->lineEdit_prompt->clear();
+//        });
+//}
+//
+//void MainWindow::on_historyItemClicked(QListWidgetItem* item)
+//{
+//    int index = ui->listWidget_history->row(item);
+//    if (index >= 0 && index < ollamaHistory.size()) {
+//        QString q = ollamaHistory[index].first;
+//        QString a = ollamaHistory[index].second;
+//        ui->textEdit_result->setText("Q: " + q + "\n\nA: " + a);
+//    }
+//}
 
 void MainWindow::on_pushButton_toPage4_clicked()
 {
@@ -481,111 +489,111 @@ void MainWindow::on_pushButton_toPage4_clicked()
 
 }
 
-void MainWindow::on_pushButton_addFavorite_clicked()
-{
-    int index = ui->listWidget_history->currentRow();
-    if (index < 0 || index >= ollamaHistory.size()) {
-        QMessageBox::warning(this, tr("提示"), tr("请先选择一条历史记录。"));
-        return;
-    }
+//void MainWindow::on_pushButton_addFavorite_clicked()
+//{
+//    int index = ui->listWidget_history->currentRow();
+//    if (index < 0 || index >= ollamaHistory.size()) {
+//        QMessageBox::warning(this, tr("提示"), tr("请先选择一条历史记录。"));
+//        return;
+//    }
+//
+//    auto pair = ollamaHistory[index];
+//
+//    // 精准去重：prompt 和 response 都必须匹配
+//    for (const auto& existing : favoritesHistory) {
+//        if (existing.first == pair.first && existing.second == pair.second) {
+//            return;
+//        }
+//    }
+//
+//    favoritesHistory.append(pair);
+//
+//    auto* item = new QListWidgetItem(pair.first.left(30));
+//    // ? 设置完整 prompt 和 response 作为 UserRole+UserRole+1
+//    item->setData(Qt::UserRole, pair.first);
+//    item->setData(Qt::UserRole + 1, pair.second);
+//    ui->listWidget_favorites->addItem(item);
+//
+//    saveFavoritesHistory();
+//}
 
-    auto pair = ollamaHistory[index];
-
-    // 精准去重：prompt 和 response 都必须匹配
-    for (const auto& existing : favoritesHistory) {
-        if (existing.first == pair.first && existing.second == pair.second) {
-            return;
-        }
-    }
-
-    favoritesHistory.append(pair);
-
-    auto* item = new QListWidgetItem(pair.first.left(30));
-    // ? 设置完整 prompt 和 response 作为 UserRole+UserRole+1
-    item->setData(Qt::UserRole, pair.first);
-    item->setData(Qt::UserRole + 1, pair.second);
-    ui->listWidget_favorites->addItem(item);
-
-    saveFavoritesHistory();
-}
-
-void MainWindow::on_pushButton_removeFavorite_clicked()
-{
-    int index = ui->listWidget_favorites->currentRow();
-    if (index < 0 || index >= ui->listWidget_favorites->count())
-        return;
-
-    QListWidgetItem* item = ui->listWidget_favorites->item(index);
-    QString prompt = item->data(Qt::UserRole).toString();
-    QString response = item->data(Qt::UserRole + 1).toString();
-
-    // 弹窗确认
-    auto confirm = QMessageBox::question(this, tr("确认移除收藏"),
-        tr("你确定要移除这条收藏记录吗？\n\nPrompt:\n%1\n\nResponse:\n%2")
-        .arg(prompt.left(100)).arg(response.left(100)),
-        QMessageBox::Yes | QMessageBox::No);
-
-    if (confirm != QMessageBox::Yes)
-        return;
-
-    // 安全删除所有完全匹配项（防止有重复）
-    favoritesHistory.erase(std::remove_if(favoritesHistory.begin(), favoritesHistory.end(),
-        [&](const QPair<QString, QString>& pair) {
-            return pair.first == prompt && pair.second == response;
-        }), favoritesHistory.end());
-
-    delete ui->listWidget_favorites->takeItem(index);
-    saveFavoritesHistory();
-}
-
-void MainWindow::on_favoriteItemClicked(QListWidgetItem* item)
-{
-    QString prompt = item->data(Qt::UserRole).toString();
-    QString response = item->data(Qt::UserRole + 1).toString();
-    ui->textEdit_result->setText("Q: " + prompt + "\n\nA: " + response);
-}
-
-
-
-void MainWindow::on_pushButton_gaussian_clicked()
-{
-    /*
-    if (!image.data) {
-        QMessageBox::warning(this, tr("警告"), tr("未加载图像"));
-        return;
-    }
-    GaussianBlur(image, mat_Gaussian, Size(29, 29), 0, 0);
-    QLabel* label = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
-    if (label)
-        display_MatInQT(label, mat_Gaussian);*/
-}
-
-
-void MainWindow::on_pushButton_gray_clicked()
-{
-    if (!image.data) {
-        QMessageBox::warning(this, tr("警告"), tr("未加载图像"));
-        return;
-    }
-    cvtColor(image, gray, COLOR_BGR2GRAY);
-    QLabel* label = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
-    if (label)
-        display_MatInQT(label, gray);
-}
-
-void MainWindow::on_pushButton_canny_clicked()
-{
-    if (!image.data) {
-        QMessageBox::warning(this, tr("警告"), tr("未加载图像"));
-        return;
-    }
-    cvtColor(image, gray, COLOR_BGR2GRAY); // Canny 要求灰度图
-    cv::Mat edge;
-    Canny(gray, edge, 100, 150, 3);
-    QLabel* label = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
-    if (label)
-        display_MatInQT(label, edge);
-}
+//void MainWindow::on_pushButton_removeFavorite_clicked()
+//{
+//    int index = ui->listWidget_favorites->currentRow();
+//    if (index < 0 || index >= ui->listWidget_favorites->count())
+//        return;
+//
+//    QListWidgetItem* item = ui->listWidget_favorites->item(index);
+//    QString prompt = item->data(Qt::UserRole).toString();
+//    QString response = item->data(Qt::UserRole + 1).toString();
+//
+//    // 弹窗确认
+//    auto confirm = QMessageBox::question(this, tr("确认移除收藏"),
+//        tr("你确定要移除这条收藏记录吗？\n\nPrompt:\n%1\n\nResponse:\n%2")
+//        .arg(prompt.left(100)).arg(response.left(100)),
+//        QMessageBox::Yes | QMessageBox::No);
+//
+//    if (confirm != QMessageBox::Yes)
+//        return;
+//
+//    // 安全删除所有完全匹配项（防止有重复）
+//    favoritesHistory.erase(std::remove_if(favoritesHistory.begin(), favoritesHistory.end(),
+//        [&](const QPair<QString, QString>& pair) {
+//            return pair.first == prompt && pair.second == response;
+//        }), favoritesHistory.end());
+//
+//    delete ui->listWidget_favorites->takeItem(index);
+//    saveFavoritesHistory();
+//}
+//
+//void MainWindow::on_favoriteItemClicked(QListWidgetItem* item)
+//{
+//    QString prompt = item->data(Qt::UserRole).toString();
+//    QString response = item->data(Qt::UserRole + 1).toString();
+//    ui->textEdit_result->setText("Q: " + prompt + "\n\nA: " + response);
+//}
+//
+//
+//
+//void MainWindow::on_pushButton_gaussian_clicked()
+//{
+//    /*
+//    if (!image.data) {
+//        QMessageBox::warning(this, tr("警告"), tr("未加载图像"));
+//        return;
+//    }
+//    GaussianBlur(image, mat_Gaussian, Size(29, 29), 0, 0);
+//    QLabel* label = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
+//    if (label)
+//        display_MatInQT(label, mat_Gaussian);*/
+//}
+//
+//
+//void MainWindow::on_pushButton_gray_clicked()
+//{
+//    if (!image.data) {
+//        QMessageBox::warning(this, tr("警告"), tr("未加载图像"));
+//        return;
+//    }
+//    cvtColor(image, gray, COLOR_BGR2GRAY);
+//    QLabel* label = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
+//    if (label)
+//        display_MatInQT(label, gray);
+//}
+//
+//void MainWindow::on_pushButton_canny_clicked()
+//{
+//    if (!image.data) {
+//        QMessageBox::warning(this, tr("警告"), tr("未加载图像"));
+//        return;
+//    }
+//    cvtColor(image, gray, COLOR_BGR2GRAY); // Canny 要求灰度图
+//    cv::Mat edge;
+//    Canny(gray, edge, 100, 150, 3);
+//    QLabel* label = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
+//    if (label)
+//        display_MatInQT(label, edge);
+//}
 
 QString MainWindow::parseOllamaResponse(const QByteArray& data)
 {
@@ -683,16 +691,16 @@ void MainWindow::saveFavoritesHistory()
     }
 }
 
-void MainWindow::on_pushButton_search_clicked()
-{
-    QString query = ui->lineEdit_search->text().trimmed();
-    if (query.isEmpty()) {
-        QMessageBox::warning(this, "提示", "请输入搜索内容");
-        return;
-    }
-    currentSearchQuery = query;
-    performWebSearch(query);
-}
+//void MainWindow::on_pushButton_search_clicked()
+//{
+//    QString query = ui->lineEdit_search->text().trimmed();
+//    if (query.isEmpty()) {
+//        QMessageBox::warning(this, "提示", "请输入搜索内容");
+//        return;
+//    }
+//    currentSearchQuery = query;
+//    performWebSearch(query);
+//}
 
 void MainWindow::loadFavoritesHistory()
 {
@@ -725,137 +733,137 @@ void MainWindow::loadFavoritesHistory()
     }
 }
 
-void MainWindow::handleSearchReply(QNetworkReply* reply)
-{
-    if (reply->error() == QNetworkReply::NoError) {
-        QByteArray responseData = reply->readAll();
-        QJsonDocument doc = QJsonDocument::fromJson(responseData);
-
-        if (!doc.isNull() && doc.isObject()) {
-            QJsonArray results = doc.object()["results"].toArray();
-            ui->textBrowser_results->setHtml(formatSearchResults(results));
-        }
-        else {
-            ui->textBrowser_results->setText("无效的响应格式");
-        }
-    }
-    else {
-        ui->textBrowser_results->setText("搜索失败: " + reply->errorString());
-    }
-    reply->deleteLater();
-}
-
-void MainWindow::performWebSearch(const QString& query)
-{
-    ui->textBrowser_results->setText("搜索中...");
-
-    QUrl url("http://localhost:8080/search");
-    QUrlQuery urlQuery;
-    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(query));
-    urlQuery.addQueryItem("format", "json");
-    url.setQuery(urlQuery);
-
-    QNetworkRequest request(url);
-    QNetworkReply* reply = searchManager->get(request);
-
-    connect(reply, &QNetworkReply::finished,
-        this, [this, reply]() { handleSearchReply(reply); });
-}
-
-QString MainWindow::formatSearchResults(const QJsonArray& results)
-{
-    QString html;
-    if (results.isEmpty()) {
-        return "未找到相关结果";
-    }
-
-    html += "<h2>搜索结果:</h2>";
-    for (int i = 0; i < results.size() && i < 5; ++i) { // 限制显示5条结果
-        QJsonObject item = results[i].toObject();
-        html += QString("<div style='margin-bottom: 15px;'>"
-            "<h3><a href='%1'>%2</a></h3>"
-            "<p>%3</p>"
-            "</div>")
-            .arg(item["url"].toString())
-            .arg(item["title"].toString())
-            .arg(item["content"].toString());
-    }
-    return html;
-}
-
-QString MainWindow::generateRAGPrompt(const QJsonArray& results, const QString& question)
-{
-    QString prompt = "基于以下搜索结果回答问题：\n\n";
-    for (const QJsonValue& result : results) {
-        QJsonObject item = result.toObject();
-        prompt += "标题: " + item["title"].toString() + "\n";
-        prompt += "内容: " + item["content"].toString() + "\n\n";
-    }
-    prompt += "问题: " + question + "\n回答:";
-    return prompt;
-}
-
-QString MainWindow::ragWithOllamaAndSearXNG(const QString& question)
-{
-    QUrl url("http://localhost:8080/search");
-    QUrlQuery urlQuery;
-    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(question));
-    urlQuery.addQueryItem("format", "json");
-    url.setQuery(urlQuery);
-
-    QNetworkRequest request(url);
-    QNetworkReply* reply = networkManager->get(request);
-
-    QEventLoop loop;
-    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    loop.exec();
-
-    if (reply->error() != QNetworkReply::NoError) {
-        return "搜索失败: " + reply->errorString();
-    }
-
-    QByteArray responseData = reply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(responseData);
-    if (doc.isNull() || !doc.isObject()) {
-        return "无效的搜索结果格式";
-    }
-
-    QJsonArray results = doc.object()["results"].toArray();
-    if (results.isEmpty()) {
-        return "未找到相关信息";
-    }
-
-    QString prompt = generateRAGPrompt(results, question);
-    return callOllama(prompt); // 使用你现有的callOllama函数
-}
-
-QString MainWindow::callOllama(const QString& prompt)
-{
-    QNetworkAccessManager networkManager;
-    QEventLoop loop;
-
-    QUrl url("http://localhost:11434/api/generate");
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-    QJsonObject json;
-    json["model"] = "deepseek-r1:8b";
-    json["prompt"] = prompt;
-    json["stream"] = false;
-
-    QNetworkReply* reply = networkManager.post(request, QJsonDocument(json).toJson());
-
-    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    loop.exec();
-
-    if (reply->error() != QNetworkReply::NoError) {
-        qDebug() << "Ollama request error:" << reply->errorString();
-        return "";
-    }
-
-    QByteArray responseData = reply->readAll();
-    return parseOllamaResponse(responseData);
-}
+//void MainWindow::handleSearchReply(QNetworkReply* reply)
+//{
+//    if (reply->error() == QNetworkReply::NoError) {
+//        QByteArray responseData = reply->readAll();
+//        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+//
+//        if (!doc.isNull() && doc.isObject()) {
+//            QJsonArray results = doc.object()["results"].toArray();
+//            ui->textBrowser_results->setHtml(formatSearchResults(results));
+//        }
+//        else {
+//            ui->textBrowser_results->setText("无效的响应格式");
+//        }
+//    }
+//    else {
+//        ui->textBrowser_results->setText("搜索失败: " + reply->errorString());
+//    }
+//    reply->deleteLater();
+//}
+//
+//void MainWindow::performWebSearch(const QString& query)
+//{
+//    ui->textBrowser_results->setText("搜索中...");
+//
+//    QUrl url("http://localhost:8080/search");
+//    QUrlQuery urlQuery;
+//    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(query));
+//    urlQuery.addQueryItem("format", "json");
+//    url.setQuery(urlQuery);
+//
+//    QNetworkRequest request(url);
+//    QNetworkReply* reply = searchManager->get(request);
+//
+//    connect(reply, &QNetworkReply::finished,
+//        this, [this, reply]() { handleSearchReply(reply); });
+//}
+//
+//QString MainWindow::formatSearchResults(const QJsonArray& results)
+//{
+//    QString html;
+//    if (results.isEmpty()) {
+//        return "未找到相关结果";
+//    }
+//
+//    html += "<h2>搜索结果:</h2>";
+//    for (int i = 0; i < results.size() && i < 5; ++i) { // 限制显示5条结果
+//        QJsonObject item = results[i].toObject();
+//        html += QString("<div style='margin-bottom: 15px;'>"
+//            "<h3><a href='%1'>%2</a></h3>"
+//            "<p>%3</p>"
+//            "</div>")
+//            .arg(item["url"].toString())
+//            .arg(item["title"].toString())
+//            .arg(item["content"].toString());
+//    }
+//    return html;
+//}
+//
+//QString MainWindow::generateRAGPrompt(const QJsonArray& results, const QString& question)
+//{
+//    QString prompt = "基于以下搜索结果回答问题：\n\n";
+//    for (const QJsonValue& result : results) {
+//        QJsonObject item = result.toObject();
+//        prompt += "标题: " + item["title"].toString() + "\n";
+//        prompt += "内容: " + item["content"].toString() + "\n\n";
+//    }
+//    prompt += "问题: " + question + "\n回答:";
+//    return prompt;
+//}
+//
+//QString MainWindow::ragWithOllamaAndSearXNG(const QString& question)
+//{
+//    QUrl url("http://localhost:8080/search");
+//    QUrlQuery urlQuery;
+//    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(question));
+//    urlQuery.addQueryItem("format", "json");
+//    url.setQuery(urlQuery);
+//
+//    QNetworkRequest request(url);
+//    QNetworkReply* reply = networkManager->get(request);
+//
+//    QEventLoop loop;
+//    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+//    loop.exec();
+//
+//    if (reply->error() != QNetworkReply::NoError) {
+//        return "搜索失败: " + reply->errorString();
+//    }
+//
+//    QByteArray responseData = reply->readAll();
+//    QJsonDocument doc = QJsonDocument::fromJson(responseData);
+//    if (doc.isNull() || !doc.isObject()) {
+//        return "无效的搜索结果格式";
+//    }
+//
+//    QJsonArray results = doc.object()["results"].toArray();
+//    if (results.isEmpty()) {
+//        return "未找到相关信息";
+//    }
+//
+//    QString prompt = generateRAGPrompt(results, question);
+//    return callOllama(prompt); // 使用你现有的callOllama函数
+//}
+//
+//QString MainWindow::callOllama(const QString& prompt)
+//{
+//    QNetworkAccessManager networkManager;
+//    QEventLoop loop;
+//
+//    QUrl url("http://localhost:11434/api/generate");
+//    QNetworkRequest request(url);
+//    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+//
+//    QJsonObject json;
+//    json["model"] = "deepseek-r1:8b";
+//    json["prompt"] = prompt;
+//    json["stream"] = false;
+//
+//    QNetworkReply* reply = networkManager.post(request, QJsonDocument(json).toJson());
+//
+//    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+//    loop.exec();
+//
+//    if (reply->error() != QNetworkReply::NoError) {
+//        qDebug() << "Ollama request error:" << reply->errorString();
+//        return "";
+//    }
+//
+//    QByteArray responseData = reply->readAll();
+//    return parseOllamaResponse(responseData);
+//}
 
 
 
