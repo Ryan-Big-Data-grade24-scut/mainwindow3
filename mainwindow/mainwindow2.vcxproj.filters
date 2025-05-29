@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>qml;cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>qrc;rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Translation Files">
+      <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
+      <Extensions>ts</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Opencv_Opts">
+      <UniqueIdentifier>{28d78a84-00f8-4e03-b432-5ee1a8e5a800}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Opencv_Opts\Core_Opts">
+      <UniqueIdentifier>{2dbf3578-968a-425a-b39c-e3da0076c4bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Opencv_Opts\Opt_type">
+      <UniqueIdentifier>{a11039b5-1ece-49c8-b208-bbf6edbcdf23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Git">
+      <UniqueIdentifier>{625796df-c647-4674-8236-2b59c476ec61}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="mainwindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtMoc Include="mainwindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <ClCompile Include="mainwindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <QtRcc Include="mainwindow2.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImgProcessor.cpp">
+      <Filter>Header Files\Opencv_Opts</Filter>
+    </ClCompile>
+    <ClCompile Include="OllamaProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="GaussianBlurOpt.h">
+      <Filter>Header Files\Opencv_Opts\Core_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="ImgOpts.h">
+      <Filter>Header Files\Opencv_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="ImgProcessor.h">
+      <Filter>Header Files\Opencv_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="CannyOpt.h">
+      <Filter>Header Files\Opencv_Opts\Core_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="GrayOpt.h">
+      <Filter>Header Files\Opencv_Opts\Core_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="effectEOpt.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="effectDOpt.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="effectCOpt.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="effectBOpt.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="effectAOpt.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="OllamaProcessor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="OllamaOperation.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="$(MSBuildThisFileDirectory)\..\x86\leptonica-1.82.0.dll" />
+    <None Include="$(MSBuildThisFileDirectory)\..\x86\tesseract50.dll" />
+    <None Include="$(MSBuildThisFileDirectory)\..\x64\leptonica-1.82.0.dll" />
+    <None Include="$(MSBuildThisFileDirectory)\..\x64\tesseract50.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Opt_types.h">
+      <Filter>Header Files\Opencv_Opts\Opt_type</Filter>
+    </ClInclude>
+    <ClInclude Include="SendPromptOperation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OllamaTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AddFavoriteOperation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoveFavoriteOperation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShowFavoriteOperation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShowHistoryOperation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShowImageOnPage4Operation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

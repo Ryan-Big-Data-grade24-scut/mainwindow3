@@ -1,3 +1,4 @@
+#pragma once
 // imageoperation.h
 #pragma once
 #include "mainwindow.h"
@@ -13,7 +14,7 @@ class ImageOperation : public QObject {
 public:
     // 构造函数：每个工具可以关联一个按钮
     explicit ImageOperation(QPushButton* btn = nullptr, MainWindow* window = nullptr)
-        : m_associatedButton(btn), windowPtr(window){
+        : m_associatedButton(btn), windowPtr(window) {
     }
 
     // 工具名称（纯虚函数，必须由子类实现）
@@ -48,8 +49,9 @@ protected:
 
 
     // 辅助函数：QImage转OpenCV格式
-    static cv::Mat qImageToMat(const QImage& image) 
-    { }
+    static cv::Mat qImageToMat(const QImage& image)
+    {
+    }
 
     // 辅助函数：OpenCV转QImage
     static QImage matToQImage(const cv::Mat& mat) {
@@ -75,6 +77,6 @@ protected:
             QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_ARGB32);
             return image.copy();
         }
-    return QImage();
+        return QImage();
     }
 };

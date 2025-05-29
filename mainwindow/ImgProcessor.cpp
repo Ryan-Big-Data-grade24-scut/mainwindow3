@@ -9,7 +9,6 @@ ImageProcessor::ImageProcessor(QObject* parent, MainWindow* window)
     : QObject(parent), windowPtr(window)
 {
     //QMessageBox::warning(window, "Initialize Warning", "ImageProcessor Successfully Created");
-    //cout << 1 << endl;
     // 使用辅助函数展开所有工具类型
     initOperations(std::make_index_sequence<std::tuple_size_v<OperationTypes>>());
 }
@@ -23,8 +22,7 @@ void ImageProcessor::connectAll()
         if (op->button()) {
             // 点击按钮 → 执行处理
             QObject::connect(op->button(), &QPushButton::clicked, [this, op]() {
-                    
-                    op->process();
+                op->process();
                 });
         }
 
