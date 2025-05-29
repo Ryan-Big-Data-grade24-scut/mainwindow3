@@ -17,14 +17,14 @@
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>50</y>
+      <x>0</x>
+      <y>0</y>
       <width>1001</width>
       <height>671</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QLabel" name="label_2">
@@ -215,8 +215,8 @@ font: 18pt &quot;Microsoft YaHei UI&quot;;</string>
      <widget class="QLabel" name="label_5">
       <property name="geometry">
        <rect>
-        <x>90</x>
-        <y>10</y>
+        <x>60</x>
+        <y>0</y>
         <width>151</width>
         <height>51</height>
        </rect>
@@ -231,18 +231,18 @@ font: 18pt &quot;Microsoft YaHei UI&quot;;</string>
      <widget class="QTextEdit" name="textEdit_result">
       <property name="geometry">
        <rect>
-        <x>320</x>
+        <x>310</x>
         <y>10</y>
-        <width>771</width>
-        <height>531</height>
+        <width>441</width>
+        <height>331</height>
        </rect>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButton_ollama">
       <property name="geometry">
        <rect>
-        <x>850</x>
-        <y>550</y>
+        <x>740</x>
+        <y>350</y>
         <width>141</width>
         <height>121</height>
        </rect>
@@ -254,9 +254,9 @@ font: 18pt &quot;Microsoft YaHei UI&quot;;</string>
      <widget class="QLineEdit" name="lineEdit_prompt">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>550</y>
-        <width>831</width>
+        <x>40</x>
+        <y>350</y>
+        <width>671</width>
         <height>121</height>
        </rect>
       </property>
@@ -266,16 +266,16 @@ font: 18pt &quot;Microsoft YaHei UI&quot;;</string>
        <rect>
         <x>30</x>
         <y>60</y>
-        <width>256</width>
-        <height>192</height>
+        <width>231</width>
+        <height>101</height>
        </rect>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButton_addFavorite">
       <property name="geometry">
        <rect>
-        <x>890</x>
-        <y>480</y>
+        <x>630</x>
+        <y>250</y>
         <width>111</width>
         <height>31</height>
        </rect>
@@ -287,8 +287,8 @@ font: 18pt &quot;Microsoft YaHei UI&quot;;</string>
      <widget class="QPushButton" name="pushButton_removeFavorite">
       <property name="geometry">
        <rect>
-        <x>890</x>
-        <y>510</y>
+        <x>630</x>
+        <y>290</y>
         <width>111</width>
         <height>31</height>
        </rect>
@@ -300,8 +300,8 @@ font: 18pt &quot;Microsoft YaHei UI&quot;;</string>
      <widget class="QLabel" name="label_7">
       <property name="geometry">
        <rect>
-        <x>100</x>
-        <y>260</y>
+        <x>80</x>
+        <y>170</y>
         <width>101</width>
         <height>41</height>
        </rect>
@@ -316,10 +316,56 @@ font: 18pt &quot;Microsoft YaHei UI&quot;;</string>
      <widget class="QListWidget" name="listWidget_favorites">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>320</y>
+        <x>20</x>
+        <y>220</y>
         <width>256</width>
-        <height>192</height>
+        <height>111</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_search">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>500</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>联网搜索</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_rag">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>540</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>RAG</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_search">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>490</y>
+        <width>571</width>
+        <height>71</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="textBrowser_results">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>580</y>
+        <width>471</width>
+        <height>91</height>
        </rect>
       </property>
      </widget>
@@ -486,7 +532,7 @@ font: 18pt &quot;Microsoft YaHei UI&quot;;</string>
      <x>0</x>
      <y>0</y>
      <width>1038</width>
-     <height>33</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

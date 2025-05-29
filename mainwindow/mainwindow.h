@@ -67,8 +67,8 @@ private slots:
     //void on_pushButton_gray_clicked();
     //void on_pushButton_canny_clicked();
 
-    //void on_pushButton_search_clicked();  // 搜索按钮点击事件
-    //void handleSearchReply(QNetworkReply* reply);  // 处理搜索回复
+    void on_pushButton_search_clicked();  // 搜索按钮点击事件
+    void handleSearchReply(QNetworkReply* reply);  // 处理搜索回复
 
 
 public:
@@ -88,11 +88,11 @@ public:
     QVector<QPair<QString, QString>> favoritesHistory;
 
     // 在 private 部分添加方法：
-    //void performWebSearch(const QString& query);  // 执行搜索
-    //QString formatSearchResults(const QJsonArray& results);  // 格式化搜索结果
-    //QString generateRAGPrompt(const QJsonArray& results, const QString& question);  // 生成RAG提示
-    //QString ragWithOllamaAndSearXNG(const QString& question);  // RAG流程集成
-    //QString callOllama(const QString& prompt);
+    void performWebSearch(const QString& query);  // 执行搜索
+    QString formatSearchResults(const QJsonArray& results);  // 格式化搜索结果
+    QString generateRAGPrompt(const QJsonArray& results, const QString& question);  // 生成RAG提示
+    QString ragWithOllamaAndSearXNG(const QString& question);  // RAG流程集成
+    QString callOllama(const QString& prompt);
 
 
 public:

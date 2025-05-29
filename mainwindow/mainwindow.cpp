@@ -143,14 +143,14 @@ MainWindow::MainWindow(QWidget* parent) :
     loadFavoritesHistory();
 
     // 新增连接
-    /*connect(ui->pushButton_search, &QPushButton::clicked,
+    connect(ui->pushButton_search, &QPushButton::clicked,
         this, &MainWindow::on_pushButton_search_clicked);
     connect(ui->pushButton_rag, &QPushButton::clicked, [this]() {
         if (!currentSearchQuery.isEmpty()) {
             QString answer = ragWithOllamaAndSearXNG(currentSearchQuery);
             ui->textBrowser_results->append("\nAI分析结果:\n" + answer);
         }
-        });*/
+        });
 }
 
 MainWindow::~MainWindow()
@@ -691,16 +691,16 @@ void MainWindow::saveFavoritesHistory()
     }
 }
 
-//void MainWindow::on_pushButton_search_clicked()
-//{
-//    QString query = ui->lineEdit_search->text().trimmed();
-//    if (query.isEmpty()) {
-//        QMessageBox::warning(this, "提示", "请输入搜索内容");
-//        return;
-//    }
-//    currentSearchQuery = query;
-//    performWebSearch(query);
-//}
+void MainWindow::on_pushButton_search_clicked()
+{
+    QString query = ui->lineEdit_search->text().trimmed();
+    if (query.isEmpty()) {
+        QMessageBox::warning(this, "提示", "请输入搜索内容");
+        return;
+    }
+    currentSearchQuery = query;
+    performWebSearch(query);
+}
 
 void MainWindow::loadFavoritesHistory()
 {
@@ -733,137 +733,137 @@ void MainWindow::loadFavoritesHistory()
     }
 }
 
-//void MainWindow::handleSearchReply(QNetworkReply* reply)
-//{
-//    if (reply->error() == QNetworkReply::NoError) {
-//        QByteArray responseData = reply->readAll();
-//        QJsonDocument doc = QJsonDocument::fromJson(responseData);
-//
-//        if (!doc.isNull() && doc.isObject()) {
-//            QJsonArray results = doc.object()["results"].toArray();
-//            ui->textBrowser_results->setHtml(formatSearchResults(results));
-//        }
-//        else {
-//            ui->textBrowser_results->setText("无效的响应格式");
-//        }
-//    }
-//    else {
-//        ui->textBrowser_results->setText("搜索失败: " + reply->errorString());
-//    }
-//    reply->deleteLater();
-//}
-//
-//void MainWindow::performWebSearch(const QString& query)
-//{
-//    ui->textBrowser_results->setText("搜索中...");
-//
-//    QUrl url("http://localhost:8080/search");
-//    QUrlQuery urlQuery;
-//    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(query));
-//    urlQuery.addQueryItem("format", "json");
-//    url.setQuery(urlQuery);
-//
-//    QNetworkRequest request(url);
-//    QNetworkReply* reply = searchManager->get(request);
-//
-//    connect(reply, &QNetworkReply::finished,
-//        this, [this, reply]() { handleSearchReply(reply); });
-//}
-//
-//QString MainWindow::formatSearchResults(const QJsonArray& results)
-//{
-//    QString html;
-//    if (results.isEmpty()) {
-//        return "未找到相关结果";
-//    }
-//
-//    html += "<h2>搜索结果:</h2>";
-//    for (int i = 0; i < results.size() && i < 5; ++i) { // 限制显示5条结果
-//        QJsonObject item = results[i].toObject();
-//        html += QString("<div style='margin-bottom: 15px;'>"
-//            "<h3><a href='%1'>%2</a></h3>"
-//            "<p>%3</p>"
-//            "</div>")
-//            .arg(item["url"].toString())
-//            .arg(item["title"].toString())
-//            .arg(item["content"].toString());
-//    }
-//    return html;
-//}
-//
-//QString MainWindow::generateRAGPrompt(const QJsonArray& results, const QString& question)
-//{
-//    QString prompt = "基于以下搜索结果回答问题：\n\n";
-//    for (const QJsonValue& result : results) {
-//        QJsonObject item = result.toObject();
-//        prompt += "标题: " + item["title"].toString() + "\n";
-//        prompt += "内容: " + item["content"].toString() + "\n\n";
-//    }
-//    prompt += "问题: " + question + "\n回答:";
-//    return prompt;
-//}
-//
-//QString MainWindow::ragWithOllamaAndSearXNG(const QString& question)
-//{
-//    QUrl url("http://localhost:8080/search");
-//    QUrlQuery urlQuery;
-//    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(question));
-//    urlQuery.addQueryItem("format", "json");
-//    url.setQuery(urlQuery);
-//
-//    QNetworkRequest request(url);
-//    QNetworkReply* reply = networkManager->get(request);
-//
-//    QEventLoop loop;
-//    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-//    loop.exec();
-//
-//    if (reply->error() != QNetworkReply::NoError) {
-//        return "搜索失败: " + reply->errorString();
-//    }
-//
-//    QByteArray responseData = reply->readAll();
-//    QJsonDocument doc = QJsonDocument::fromJson(responseData);
-//    if (doc.isNull() || !doc.isObject()) {
-//        return "无效的搜索结果格式";
-//    }
-//
-//    QJsonArray results = doc.object()["results"].toArray();
-//    if (results.isEmpty()) {
-//        return "未找到相关信息";
-//    }
-//
-//    QString prompt = generateRAGPrompt(results, question);
-//    return callOllama(prompt); // 使用你现有的callOllama函数
-//}
-//
-//QString MainWindow::callOllama(const QString& prompt)
-//{
-//    QNetworkAccessManager networkManager;
-//    QEventLoop loop;
-//
-//    QUrl url("http://localhost:11434/api/generate");
-//    QNetworkRequest request(url);
-//    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-//
-//    QJsonObject json;
-//    json["model"] = "deepseek-r1:8b";
-//    json["prompt"] = prompt;
-//    json["stream"] = false;
-//
-//    QNetworkReply* reply = networkManager.post(request, QJsonDocument(json).toJson());
-//
-//    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-//    loop.exec();
-//
-//    if (reply->error() != QNetworkReply::NoError) {
-//        qDebug() << "Ollama request error:" << reply->errorString();
-//        return "";
-//    }
-//
-//    QByteArray responseData = reply->readAll();
-//    return parseOllamaResponse(responseData);
-//}
+void MainWindow::handleSearchReply(QNetworkReply* reply)
+{
+    if (reply->error() == QNetworkReply::NoError) {
+        QByteArray responseData = reply->readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+
+        if (!doc.isNull() && doc.isObject()) {
+            QJsonArray results = doc.object()["results"].toArray();
+            ui->textBrowser_results->setHtml(formatSearchResults(results));
+        }
+        else {
+            ui->textBrowser_results->setText("无效的响应格式");
+        }
+    }
+    else {
+        ui->textBrowser_results->setText("搜索失败: " + reply->errorString());
+    }
+    reply->deleteLater();
+}
+
+void MainWindow::performWebSearch(const QString& query)
+{
+    ui->textBrowser_results->setText("搜索中...");
+
+    QUrl url("http://localhost:8080/search");
+    QUrlQuery urlQuery;
+    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(query));
+    urlQuery.addQueryItem("format", "json");
+    url.setQuery(urlQuery);
+
+    QNetworkRequest request(url);
+    QNetworkReply* reply = searchManager->get(request);
+
+    connect(reply, &QNetworkReply::finished,
+        this, [this, reply]() { handleSearchReply(reply); });
+}
+
+QString MainWindow::formatSearchResults(const QJsonArray& results)
+{
+    QString html;
+    if (results.isEmpty()) {
+        return "未找到相关结果";
+    }
+
+    html += "<h2>搜索结果:</h2>";
+    for (int i = 0; i < results.size() && i < 5; ++i) { // 限制显示5条结果
+        QJsonObject item = results[i].toObject();
+        html += QString("<div style='margin-bottom: 15px;'>"
+            "<h3><a href='%1'>%2</a></h3>"
+            "<p>%3</p>"
+            "</div>")
+            .arg(item["url"].toString())
+            .arg(item["title"].toString())
+            .arg(item["content"].toString());
+    }
+    return html;
+}
+
+QString MainWindow::generateRAGPrompt(const QJsonArray& results, const QString& question)
+{
+    QString prompt = "基于以下搜索结果回答问题：\n\n";
+    for (const QJsonValue& result : results) {
+        QJsonObject item = result.toObject();
+        prompt += "标题: " + item["title"].toString() + "\n";
+        prompt += "内容: " + item["content"].toString() + "\n\n";
+    }
+    prompt += "问题: " + question + "\n回答:";
+    return prompt;
+}
+
+QString MainWindow::ragWithOllamaAndSearXNG(const QString& question)
+{
+    QUrl url("http://localhost:8080/search");
+    QUrlQuery urlQuery;
+    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(question));
+    urlQuery.addQueryItem("format", "json");
+    url.setQuery(urlQuery);
+
+    QNetworkRequest request(url);
+    QNetworkReply* reply = networkManager->get(request);
+
+    QEventLoop loop;
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    if (reply->error() != QNetworkReply::NoError) {
+        return "搜索失败: " + reply->errorString();
+    }
+
+    QByteArray responseData = reply->readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(responseData);
+    if (doc.isNull() || !doc.isObject()) {
+        return "无效的搜索结果格式";
+    }
+
+    QJsonArray results = doc.object()["results"].toArray();
+    if (results.isEmpty()) {
+        return "未找到相关信息";
+    }
+
+    QString prompt = generateRAGPrompt(results, question);
+    return callOllama(prompt); // 使用你现有的callOllama函数
+}
+
+QString MainWindow::callOllama(const QString& prompt)
+{
+    QNetworkAccessManager networkManager;
+    QEventLoop loop;
+
+    QUrl url("http://localhost:11434/api/generate");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QJsonObject json;
+    json["model"] = "deepseek-r1:8b";
+    json["prompt"] = prompt;
+    json["stream"] = false;
+
+    QNetworkReply* reply = networkManager.post(request, QJsonDocument(json).toJson());
+
+    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    if (reply->error() != QNetworkReply::NoError) {
+        qDebug() << "Ollama request error:" << reply->errorString();
+        return "";
+    }
+
+    QByteArray responseData = reply->readAll();
+    return parseOllamaResponse(responseData);
+}
 
 
 
