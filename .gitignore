@@ -51,3 +51,4 @@ Thumbs.db
 
 # 忽略临时副本的 VS 项目文件
 *.vcxproj
+.sln
