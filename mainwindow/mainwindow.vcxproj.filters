@@ -33,6 +33,15 @@
     <Filter Include="Git">
       <UniqueIdentifier>{625796df-c647-4674-8236-2b59c476ec61}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Ollama_Opts">
+      <UniqueIdentifier>{267770a4-3fc1-4683-82a4-ef94894cb124}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Ollama_Opts\Core_Opts">
+      <UniqueIdentifier>{822f56e6-0ba9-4abb-b3ed-50e40a64de3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Ollama_Opts\Opt_type">
+      <UniqueIdentifier>{303df889-cba4-4479-9caf-94c0eff7119c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="mainwindow.qrc">
@@ -55,6 +64,9 @@
     <ClCompile Include="ImgProcessor.cpp">
       <Filter>Header Files\Opencv_Opts</Filter>
     </ClCompile>
+    <ClCompile Include="OllamaProcessor.cpp">
+      <Filter>Header Files\Ollama_Opts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="x64\Debug\qt\uic\ui_mainwindow.h">
@@ -62,6 +74,27 @@
     </ClInclude>
     <ClInclude Include="Opt_types.h">
       <Filter>Header Files\Opencv_Opts\Opt_type</Filter>
+    </ClInclude>
+    <ClInclude Include="OllamaTypes.h">
+      <Filter>Header Files\Ollama_Opts\Opt_type</Filter>
+    </ClInclude>
+    <ClInclude Include="AddFavoriteOperation.h">
+      <Filter>Header Files\Ollama_Opts\Core_Opts</Filter>
+    </ClInclude>
+    <ClInclude Include="ShowImageOnPage4Operation.h">
+      <Filter>Header Files\Ollama_Opts\Core_Opts</Filter>
+    </ClInclude>
+    <ClInclude Include="ShowHistoryOperation.h">
+      <Filter>Header Files\Ollama_Opts\Core_Opts</Filter>
+    </ClInclude>
+    <ClInclude Include="ShowFavoriteOperation.h">
+      <Filter>Header Files\Ollama_Opts\Core_Opts</Filter>
+    </ClInclude>
+    <ClInclude Include="SendPromptOperation.h">
+      <Filter>Header Files\Ollama_Opts\Core_Opts</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoveFavoriteOperation.h">
+      <Filter>Header Files\Ollama_Opts\Core_Opts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -79,6 +112,27 @@
     </QtMoc>
     <QtMoc Include="CannyOpt.h">
       <Filter>Header Files\Opencv_Opts\Core_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="effectAOpt.h">
+      <Filter>Header Files\Opencv_Opts\Core_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="effectBOpt.h">
+      <Filter>Header Files\Opencv_Opts\Core_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="effectCOpt.h">
+      <Filter>Header Files\Opencv_Opts\Core_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="effectDOpt.h">
+      <Filter>Header Files\Opencv_Opts\Core_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="effectEOpt.h">
+      <Filter>Header Files\Opencv_Opts\Core_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="OllamaOperation.h">
+      <Filter>Header Files\Ollama_Opts</Filter>
+    </QtMoc>
+    <QtMoc Include="OllamaProcessor.h">
+      <Filter>Header Files\Ollama_Opts</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
