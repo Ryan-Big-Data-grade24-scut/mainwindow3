@@ -35,6 +35,7 @@
 class ImageProcessor;
 class OllamaProcessor;
 class SearchProcessor;
+class OCRProcessor;
 using namespace cv;
 
 namespace Ui {
@@ -122,7 +123,7 @@ private:
     std::unique_ptr<ImageProcessor> m_processor;
     std::unique_ptr<OllamaProcessor> ollamaProcessor;
     std::unique_ptr<SearchProcessor> searchProcessor;
-
+    std::unique_ptr<OCRProcessor> ocrProcessor;
 };
 
 #endif // MAINWINDOW_H

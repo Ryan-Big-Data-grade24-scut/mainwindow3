@@ -40,7 +40,12 @@
 #include "OllamaProcessor.h"
 #include "ImgProcessor.h"
 #include "SearchProcessor.h" // 在实现中包含完整定义
-
+//// 保存并取消 Qt 的 slots 定义
+//#pragma push_macro("slots")
+//#undef slots
+#include "OCRProcessor.h"
+// 恢复 Qt 的 slots 定义
+//#pragma pop_macro("slots")
 //注释
 
 
@@ -144,6 +149,10 @@ MainWindow::MainWindow(QWidget* parent) :
     ollamaProcessor->connectAll();
 
     searchProcessor = std::make_unique<SearchProcessor>(this);
+
+    ocrProcessor = std::make_unique<OCRProcessor>(this);
+    ocrProcessor->connectAll();
+
     /*searchProcessor->connectAll();*/
 
     //connect(ui->pushButton_gray, &QPushButton::clicked, this, &MainWindow::on_pushButton_gray_clicked);

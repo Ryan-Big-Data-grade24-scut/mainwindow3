@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QLabel" name="label_2">
@@ -189,7 +189,7 @@ font: 18pt &quot;Microsoft YaHei UI&quot;;</string>
        <rect>
         <x>80</x>
         <y>530</y>
-        <width>871</width>
+        <width>611</width>
         <height>121</height>
        </rect>
       </property>
@@ -208,6 +208,22 @@ font: 18pt &quot;Microsoft YaHei UI&quot;;</string>
       </property>
       <property name="text">
        <string>识别文字的展示和输出</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_ocr">
+      <property name="geometry">
+       <rect>
+        <x>720</x>
+        <y>530</y>
+        <width>121</width>
+        <height>121</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 22pt &quot;Agency FB&quot;;</string>
+      </property>
+      <property name="text">
+       <string>识别按钮</string>
       </property>
      </widget>
     </widget>
@@ -588,7 +604,7 @@ font: 22pt &quot;Microsoft YaHei UI&quot;;</string>
      <x>0</x>
      <y>0</y>
      <width>1038</width>
-     <height>33</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
