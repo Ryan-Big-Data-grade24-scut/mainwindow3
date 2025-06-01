@@ -1,5 +1,6 @@
 #pragma once
 
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -28,9 +29,12 @@
 #include <QUrlQuery>  // 必须包含此头文件
 #include <QUrl>       // QUrl 也需要
 #include <QThread>
-//#include "ImgProcessor.h" 
+#include <memory>
+//#include "SearchProcessor.h"
+//#include "ImgProcessor.h"
 class ImageProcessor;
-
+class OllamaProcessor;
+class SearchProcessor;
 using namespace cv;
 
 namespace Ui {
@@ -55,23 +59,24 @@ private slots:
     void on_pushButton_4_clicked();
     void on_pushButton_history_clicked();
     void on_esc_pressed();
-    void startOllamaInteraction();
-    void on_historyItemClicked(QListWidgetItem* item);
+    //void startOllamaInteraction();
+    //void on_historyItemClicked(QListWidgetItem* item);
 
     void on_pushButton_toPage4_clicked();
 
-    void on_pushButton_addFavorite_clicked();
-    void on_pushButton_removeFavorite_clicked();
-    void on_favoriteItemClicked(QListWidgetItem* item); // 可选，用于点击显示内容
-    void on_pushButton_gaussian_clicked();
-    void on_pushButton_gray_clicked();
-    void on_pushButton_canny_clicked();
+    //void on_pushButton_addFavorite_clicked();
+    //void on_pushButton_removeFavorite_clicked();
+    //void on_favoriteItemClicked(QListWidgetItem* item); // 可选，用于点击显示内容
+    
 
-    void on_pushButton_search_clicked();  // 搜索按钮点击事件
-    void handleSearchReply(QNetworkReply* reply);  // 处理搜索回复
+    
 
 
-private:
+    //void on_pushButton_search_clicked();  // 搜索按钮点击事件
+    //void handleSearchReply(QNetworkReply* reply);  // 处理搜索回复
+
+
+public:
     QImage MatToQImage(const cv::Mat& mat);
     bool eventFilter(QObject* obj, QEvent* event);
     QString parseOllamaResponse(const QByteArray& data);
@@ -86,16 +91,17 @@ private:
     void loadFavoritesHistory();
 
     QVector<QPair<QString, QString>> favoritesHistory;
+    
 
     // 在 private 部分添加方法：
-    void performWebSearch(const QString& query);  // 执行搜索
-    QString formatSearchResults(const QJsonArray& results);  // 格式化搜索结果
-    QString generateRAGPrompt(const QJsonArray& results, const QString& question);  // 生成RAG提示
-    QString ragWithOllamaAndSearXNG(const QString& question);  // RAG流程集成
-    QString callOllama(const QString& prompt);
+    //void performWebSearch(const QString& query);  // 执行搜索
+    //QString formatSearchResults(const QJsonArray& results);  // 格式化搜索结果
+    //QString generateRAGPrompt(const QJsonArray& results, const QString& question);  // 生成RAG提示
+    //QString ragWithOllamaAndSearXNG(const QString& question);  // RAG流程集成
+    //QString callOllama(const QString& prompt);
 
 
-private:
+public:
 
 
     std::vector<Mat> history;
@@ -110,13 +116,19 @@ private:
     const QString historyFilePath = "image_history.json";
 
     // 在 private 成员变量部分添加：
-    QNetworkAccessManager* searchManager;  // 可以复用现有的networkManager
-    QString currentSearchQuery;  // 保存当前搜索查询
+    //QNetworkAccessManager* searchManager;  // 可以复用现有的networkManager
+    //QString currentSearchQuery;  // 保存当前搜索查询
 private:
     std::unique_ptr<ImageProcessor> m_processor;
+    std::unique_ptr<OllamaProcessor> ollamaProcessor;
+    std::unique_ptr<SearchProcessor> searchProcessor;
+
 };
 
 #endif // MAINWINDOW_H
+
+
+
 
 
 

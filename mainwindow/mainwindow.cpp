@@ -1,6 +1,6 @@
-#include "mainwindow.h"
+ï»¿#include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "ImgProcessor.h"
+
 #include <QMessageBox>
 #include <QScrollBar>
 #include <QFileDialog>
@@ -23,22 +23,25 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QDebug>
 #include <QEventLoop>
-#include <QUrlQuery>  // ±ØĞë°üº¬´ËÍ·ÎÄ¼ş
-#include <QUrl>       // QUrl Ò²ĞèÒª
+#include <QUrlQuery>  // å¿…é¡»åŒ…å«æ­¤å¤´æ–‡ä»¶
+#include <QUrl>       // QUrl ä¹Ÿéœ€è¦
 #include <QThread>
-#include <QDesktopWidget>  // Qt 5Ğè°üº¬´ËÍ·ÎÄ¼ş
+//#include <QDesktopWidget>  // Qt 5éœ€åŒ…å«æ­¤å¤´æ–‡ä»¶
 #include <QMessageBox>
 #include <QPixmap>
 #include <QImage>
 #include <QThread>
 #include <QMetaObject>
+#include "OllamaProcessor.h"
+#include "ImgProcessor.h"
+#include "SearchProcessor.h" // åœ¨å®ç°ä¸­åŒ…å«å®Œæ•´å®šä¹‰
 
+//æ³¨é‡Š
 
 
 
@@ -47,102 +50,118 @@ MainWindow::MainWindow(QWidget* parent) :
     ui(new Ui::mainwindowClass),
     historyIndex(-1),
     networkManager(new QNetworkAccessManager(this)),
-    searchManager(new QNetworkAccessManager(this)),// ³õÊ¼»¯ÍøÂç¹ÜÀíÆ÷
-    m_processor(nullptr)
+    //searchManager(new QNetworkAccessManager(this)),// åˆå§‹åŒ–ç½‘ç»œç®¡ç†å™¨
+    m_processor(nullptr),
+    ollamaProcessor(nullptr)
+    /*searchProcessor(nullptr)*/
 {
     ui->setupUi(this);
     //QMessageBox::warning(this, "UI", "UI Successfully setup");
-
-    // ³õÊ¼»¯°´Å¥×´Ì¬
-    ui->pushButton_2->setEnabled(false);
-    ui->pushButton_3->setEnabled(false);
-    ui->pushButton_4->setEnabled(false);
-    ui->pushButton_history->setEnabled(false);
-    ui->pushButton_toPage4->setEnabled(false);
+    //ollamaProcessor = std::make_unique<OllamaProcessor>(this);
+    // åˆå§‹åŒ–æŒ‰é’®çŠ¶æ€
+    ui->pushButton_2->setEnabled(true);
+    ui->pushButton_3->setEnabled(true);
+    ui->pushButton_4->setEnabled(true);
+    ui->pushButton_history->setEnabled(true);
+    ui->pushButton_toPage4->setEnabled(true);
     history.clear();
 
-    // Ìí¼ÓÒ³Ãæ
-    ui->stackedWidget->addWidget(new QWidget()); // µÚ¶şÒ³
-    ui->stackedWidget->addWidget(new QWidget()); // µÚÈıÒ³
-    ui->stackedWidget->addWidget(new QWidget()); // µÚËÄÒ³
+    // æ·»åŠ é¡µé¢
+    ui->stackedWidget->addWidget(new QWidget()); // ç¬¬äºŒé¡µ
+    ui->stackedWidget->addWidget(new QWidget()); // ç¬¬ä¸‰é¡µ
+    ui->stackedWidget->addWidget(new QWidget()); // ç¬¬å››é¡µ
 
-    // °²×°ÊÂ¼ş¹ıÂËÆ÷
+    // å®‰è£…äº‹ä»¶è¿‡æ»¤å™¨
     ui->stackedWidget->installEventFilter(this);
     ui->stackedWidget->widget(1)->installEventFilter(this);
     ui->stackedWidget->widget(2)->installEventFilter(this);
     ui->stackedWidget->widget(3)->installEventFilter(this);
 
-    // °´Å¥°ó¶¨
+    // æŒ‰é’®ç»‘å®š
     connect(ui->pushButton_toPage4, &QPushButton::clicked, this, &MainWindow::on_pushButton_toPage4_clicked);
     connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::on_pushButton_clicked);
-    connect(ui->pushButton_ollama, &QPushButton::clicked, this, &MainWindow::startOllamaInteraction);
-    connect(ui->listWidget_history, &QListWidget::itemClicked, this, &MainWindow::on_historyItemClicked);
-    connect(ui->lineEdit_prompt, &QLineEdit::returnPressed, this, &MainWindow::startOllamaInteraction); // ĞÂÔö
-    connect(ui->pushButton_addFavorite, &QPushButton::clicked, this, &MainWindow::on_pushButton_addFavorite_clicked);
-    connect(ui->pushButton_removeFavorite, &QPushButton::clicked, this, &MainWindow::on_pushButton_removeFavorite_clicked);
-    connect(ui->listWidget_favorites, &QListWidget::itemClicked, this, &MainWindow::on_favoriteItemClicked);
+    //connect(ui->pushButton_ollama, &QPushButton::clicked, this, &MainWindow::startOllamaInteraction);
+    //connect(ui->listWidget_history, &QListWidget::itemClicked, this, &MainWindow::on_historyItemClicked);
+    //connect(ui->lineEdit_prompt, &QLineEdit::returnPressed, this, &MainWindow::startOllamaInteraction); // æ–°å¢
+    //connect(ui->pushButton_addFavorite, &QPushButton::clicked, this, &MainWindow::on_pushButton_addFavorite_clicked);
+    //connect(ui->pushButton_removeFavorite, &QPushButton::clicked, this, &MainWindow::on_pushButton_removeFavorite_clicked);
+    //connect(ui->listWidget_favorites, &QListWidget::itemClicked, this, &MainWindow::on_favoriteItemClicked);
+    connect(ui->pushButton_2, &QPushButton::clicked, this, &MainWindow::on_pushButton_2_clicked);
+    connect(ui->pushButton_3, &QPushButton::clicked, this, &MainWindow::on_pushButton_3_clicked);
+    connect(ui->pushButton_4, &QPushButton::clicked, this, &MainWindow::on_pushButton_4_clicked);
+    /*connect(ui->pushButton_history, &QPushButton::clicked, this, &MainWindow::on_pushButton_history_clicked);*/
+
+    /*connect(ui->pushButton_effectA, &QPushButton::clicked, this, &MainWindow::on_pushButton_effectA_clicked);
+    connect(ui->pushButton_effectB, &QPushButton::clicked, this, &MainWindow::on_pushButton_effectB_clicked);
+    connect(ui->pushButton_effectC, &QPushButton::clicked, this, &MainWindow::on_pushButton_effectC_clicked);
+    connect(ui->pushButton_effectD, &QPushButton::clicked, this, &MainWindow::on_pushButton_effectD_clicked);
+    connect(ui->pushButton_effectE, &QPushButton::clicked, this, &MainWindow::on_pushButton_effectE_clicked);*/
     //connect(ui->pushButton_gaussian, &QPushButton::clicked, this, &MainWindow::on_pushButton_gaussian_clicked);
     /*
-    ×¢Òâ£º
-    ui_mainwindow.hÖĞ//QMetaObject::connectSlotsByName(mainwindowClass);
-    Òª×¢ÊÍµô
-    ·ñÔòÒ»¶¨ÒªÓÃon_..._clickedµÄ×ÖÑÛ×÷º¯ÊıÃû£¬¶àÌ¬ÎŞ´ÓÌ¸Æğ
-    µ«ÊÇ²»ÔÚgitµÄ·ÖÖ§¹ÜÀíÖĞ
+    æ³¨æ„ï¼š
+    ui_mainwindow.hä¸­//QMetaObject::connectSlotsByName(mainwindowClass);
+    è¦æ³¨é‡Šæ‰
+    å¦åˆ™ä¸€å®šè¦ç”¨on_..._clickedçš„å­—çœ¼ä½œå‡½æ•°åï¼Œå¤šæ€æ— ä»è°ˆèµ·
+    ä½†æ˜¯ä¸åœ¨gitçš„åˆ†æ”¯ç®¡ç†ä¸­
     */
 
     /*
-    1. ¼Ü¹¹½âÊÍ£º
+    1. æ¶æ„è§£é‡Šï¼š
 
-        MainWindow::MainWindow¡ª¡ªÓëÖ÷³ÌĞòµÄ¡°½Ó¿Ú¡±
+        MainWindow::MainWindowâ€”â€”ä¸ä¸»ç¨‹åºçš„â€œæ¥å£â€
 
-            ´´½¨m_processor(ImageProcessor)
+            åˆ›å»ºm_processor(ImageProcessor)
 
-            ½«´°¿ÚÖ¸Õë´«ÈëÆäÖĞ
+            å°†çª—å£æŒ‡é’ˆä¼ å…¥å…¶ä¸­
 
-        ImageProcessor¡ª¡ª¸ºÔğ×¢²á¡¢Á´½ÓµÄ¡°ÖĞÊà¡±
+        ImageProcessorâ€”â€”è´Ÿè´£æ³¨å†Œã€é“¾æ¥çš„â€œä¸­æ¢â€
 
             ImageProcessor::ImageProcessor
 
-                ×¢²á£¨´ÓOpt_typesÖĞ»ñÈ¡´ı×¢²áµÄ¹¦ÄÜ£©
+                æ³¨å†Œï¼ˆä»Opt_typesä¸­è·å–å¾…æ³¨å†Œçš„åŠŸèƒ½ï¼‰
 
             connectAll
 
-                Á´½Ó£¨ĞÅºÅ£ºop->button()Óë²Ûº¯Êı£ºop->process()Á´½Ó£©
+                é“¾æ¥ï¼ˆä¿¡å·ï¼šop->button()ä¸æ§½å‡½æ•°ï¼šop->process()é“¾æ¥ï¼‰dfsdfå¾ˆå¥½
 
-        ImageOperations¡ª¡ªÍ¼Ïñ²Ù×÷µÄ»ùÀà
+        ImageOperationsâ€”â€”å›¾åƒæ“ä½œçš„åŸºç±»
 
-        GaussianBlurOperation¡ª¡ª¸ºÔğ¾ßÌå²Ù×÷µÄÅÉÉúÀà
+        GaussianBlurOperationâ€”â€”è´Ÿè´£å…·ä½“æ“ä½œçš„æ´¾ç”Ÿç±»
 
-    2. ÈçºÎÌí¼ÓĞÂµÄ¹¦ÄÜ£¿
+    2. å¦‚ä½•æ·»åŠ æ–°çš„åŠŸèƒ½ï¼Ÿ
 
-        Ê×ÏÈ£ºÔÚÍ·ÎÄ¼ş¡ª¡ªCore_optsÖĞ£¬´´½¨Í·ÎÄ¼ş£¬¶¨ÒåÒ»¸ö___OperationÀà
-        È»ºó£º·ÂÕÕÆäËüÀà£¬
-            ĞŞ¸Ä"setButton"ÖĞµÄbuttonÖ¸Õë
-            ĞŞ¸Ä"process"ÖĞµÄ²Ù×÷
-            ĞŞ¸Ä"name"ÖĞµÄÃû×Ö
-        ×îºó£ºÔÚÍ·ÎÄ¼ş¡ª¡ªOpt_type¡ª¡ªOpt_types.hÖĞ£¬Ìí¼ÓÉÏÍ·ÎÄ¼şÃûºÍÀàÃû¼´¿É
+        é¦–å…ˆï¼šåœ¨å¤´æ–‡ä»¶â€”â€”Core_optsä¸­ï¼Œåˆ›å»ºå¤´æ–‡ä»¶ï¼Œå®šä¹‰ä¸€ä¸ª___Operationç±»
+        ç„¶åï¼šä»¿ç…§å…¶å®ƒç±»ï¼Œ
+            ä¿®æ”¹"setButton"ä¸­çš„buttonæŒ‡é’ˆ
+            ä¿®æ”¹"process"ä¸­çš„æ“ä½œ
+            ä¿®æ”¹"name"ä¸­çš„åå­—
+        æœ€åï¼šåœ¨å¤´æ–‡ä»¶â€”â€”Opt_typeâ€”â€”Opt_types.hä¸­ï¼Œæ·»åŠ ä¸Šå¤´æ–‡ä»¶åå’Œç±»åå³å¯
     */
-    m_processor = std::make_unique<ImageProcessor>(this, this);  // ´«µİthisÖ¸Õë
+    m_processor = std::make_unique<ImageProcessor>(this, this);  // ä¼ é€’thisæŒ‡é’ˆ
     m_processor->connectAll();
 
+    ollamaProcessor = std::make_unique<OllamaProcessor>(this);
+    ollamaProcessor->connectAll();
 
+    searchProcessor = std::make_unique<SearchProcessor>(this);
+    /*searchProcessor->connectAll();*/
 
     //connect(ui->pushButton_gray, &QPushButton::clicked, this, &MainWindow::on_pushButton_gray_clicked);
     //connect(ui->pushButton_canny, &QPushButton::clicked, this, &MainWindow::on_pushButton_canny_clicked);
 
-    loadImageHistory(); // ¼ÓÔØÀúÊ·¼ÇÂ¼
+    loadImageHistory(); // åŠ è½½å†å²è®°å½•
     loadOllamaHistory();
     loadFavoritesHistory();
 
-    // ĞÂÔöÁ¬½Ó
-    connect(ui->pushButton_search, &QPushButton::clicked,
+    // æ–°å¢è¿æ¥
+    /*connect(ui->pushButton_search, &QPushButton::clicked,
         this, &MainWindow::on_pushButton_search_clicked);
     connect(ui->pushButton_rag, &QPushButton::clicked, [this]() {
         if (!currentSearchQuery.isEmpty()) {
             QString answer = ragWithOllamaAndSearXNG(currentSearchQuery);
-            ui->textBrowser_results->append("\nAI·ÖÎö½á¹û:\n" + answer);
+            ui->textBrowser_results->append("\nAIåˆ†æç»“æœ:\n" + answer);
         }
-        });
+        });*/
 }
 
 MainWindow::~MainWindow()
@@ -157,7 +176,7 @@ void MainWindow::on_pushButton_clicked()
 {
     ui->label->clear();
     ui->label_1->clear();
-    QString filename = QFileDialog::getOpenFileName(this, tr("´ò¿ªÍ¼Æ¬"), ".", tr("Image file(*.png *.jpg *.bmp)"));
+    QString filename = QFileDialog::getOpenFileName(this, tr("æ‰“å¼€å›¾ç‰‡"), ".", tr("Image file(*.png *.jpg *.bmp)"));
     image = cv::imread(filename.toLocal8Bit().data());
     if (image.data) {
         ui->pushButton_2->setEnabled(true);
@@ -175,7 +194,7 @@ void MainWindow::on_pushButton_clicked()
         }
     }
     else {
-        QMessageBox::information(this, tr("ÌáÊ¾"), tr("Î´³É¹¦ÔØÈëÍ¼Æ¬£¡"), QMessageBox::Ok);
+        QMessageBox::information(this, tr("æç¤º"), tr("æœªæˆåŠŸè½½å…¥å›¾ç‰‡ï¼"), QMessageBox::Ok);
     }
 }
 
@@ -195,28 +214,39 @@ void MainWindow::on_pushButton_3_clicked()
 
 void MainWindow::on_pushButton_4_clicked()
 {
-    auto reply = QMessageBox::question(this, tr("ÍË³öÈ·ÈÏ"), tr("ÄãÈ·¶¨ÒªÍË³ö³ÌĞòÂğ£¿"),
+    auto reply = QMessageBox::question(this, tr("é€€å‡ºç¡®è®¤"), tr("ä½ ç¡®å®šè¦é€€å‡ºç¨‹åºå—ï¼Ÿ"),
         QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes) {
         QApplication::quit();
     }
 }
 
+void MainWindow::on_pushButton_toPage4_clicked()
+{
+
+    QLabel* label_on_page4 = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
+    if (label_on_page4 && image.data) {
+        display_MatInQT(label_on_page4, image);
+    }
+    ui->stackedWidget->setCurrentIndex(3);
+
+}
+
 void MainWindow::on_pushButton_history_clicked()
 {
     if (imagePathHistory.isEmpty()) {
-        QMessageBox::information(this, tr("ÌáÊ¾"), tr("Ã»ÓĞÀúÊ·¼ÇÂ¼£¡"), QMessageBox::Ok);
+        QMessageBox::information(this, tr("æç¤º"), tr("æ²¡æœ‰å†å²è®°å½•ï¼"), QMessageBox::Ok);
         return;
     }
 
-    QString selected = QInputDialog::getItem(this, tr("ÀúÊ·Í¼Æ¬"), tr("Ñ¡ÔñÒ»¸öÀúÊ·Í¼Æ¬Â·¾¶:"), imagePathHistory, 0, false);
+    QString selected = QInputDialog::getItem(this, tr("å†å²å›¾ç‰‡"), tr("é€‰æ‹©ä¸€ä¸ªå†å²å›¾ç‰‡è·¯å¾„:"), imagePathHistory, 0, false);
     if (!selected.isEmpty() && QFile::exists(selected)) {
         image = cv::imread(selected.toLocal8Bit().data());
         if (image.data) {
             display_MatInQT(ui->label, image);
         }
         else {
-            QMessageBox::warning(this, tr("´íÎó"), tr("ÎŞ·¨¼ÓÔØ¸ÃÍ¼Æ¬£¡"));
+            QMessageBox::warning(this, tr("é”™è¯¯"), tr("æ— æ³•åŠ è½½è¯¥å›¾ç‰‡ï¼"));
         }
     }
 }
@@ -224,20 +254,20 @@ void MainWindow::on_pushButton_history_clicked()
 QImage MainWindow::MatToQImage(const cv::Mat& mat)
 {
     try {
-        // Éî¶ÈÑéÖ¤ÊäÈë¾ØÕó
+        // æ·±åº¦éªŒè¯è¾“å…¥çŸ©é˜µ
         if (mat.empty() || mat.dims != 2 || mat.rows <= 0 || mat.cols <= 0) {
             qWarning() << "Invalid matrix dimensions:" << mat.rows << "x" << mat.cols;
             return QImage();
         }
 
-        // °²È«»ñÈ¡¾ØÕóÊı¾İ£¨ÈıÖØ±£»¤£©
+        // å®‰å…¨è·å–çŸ©é˜µæ•°æ®ï¼ˆä¸‰é‡ä¿æŠ¤ï¼‰
         cv::Mat localMat;
         if (!mat.isContinuous() || mat.u == nullptr || !mat.u->refcount) {
             localMat = mat.clone();
             qDebug() << "Matrix cloned for safety";
         }
         else {
-            // ¾«È·¼ÆËãËùĞèÄÚ´æ´óĞ¡
+            // ç²¾ç¡®è®¡ç®—æ‰€éœ€å†…å­˜å¤§å°
             size_t requiredSize = mat.rows * mat.step;
             if (requiredSize == 0) {
                 qWarning() << "Zero-size matrix detected";
@@ -247,26 +277,26 @@ QImage MainWindow::MatToQImage(const cv::Mat& mat)
             mat.copyTo(localMat);
         }
 
-        // °²È«×ª»»º¯Êı
+        // å®‰å…¨è½¬æ¢å‡½æ•°
         auto safeConvert = [](const cv::Mat& mat) -> QImage {
-            // ÑéÖ¤¾ØÕó»ù´¡²ÎÊı
+            // éªŒè¯çŸ©é˜µåŸºç¡€å‚æ•°
             if (mat.depth() != CV_8U) {
                 qWarning() << "Unsupported matrix depth:" << mat.depth();
                 return QImage();
             }
 
-            // ¸ù¾İÍ¨µÀÊıÑ¡Ôñ´¦Àí·½Ê½
+            // æ ¹æ®é€šé“æ•°é€‰æ‹©å¤„ç†æ–¹å¼
             switch (mat.channels()) {
-            case 1: {  // »Ò¶ÈÍ¼
+            case 1: {  // ç°åº¦å›¾
                 QImage image(mat.cols, mat.rows, QImage::Format_Grayscale8);
 
-                // Ë«ÖØÑéÖ¤Í¼Ïñ´´½¨½á¹û
+                // åŒé‡éªŒè¯å›¾åƒåˆ›å»ºç»“æœ
                 if (image.isNull() || image.width() != mat.cols || image.height() != mat.rows) {
                     qCritical() << "Failed to create grayscale QImage";
                     return QImage();
                 }
 
-                // °²È«ÄÚ´æ¿½±´£¨´ø±ß½ç¼ì²é£©
+                // å®‰å…¨å†…å­˜æ‹·è´ï¼ˆå¸¦è¾¹ç•Œæ£€æŸ¥ï¼‰
                 for (int row = 0; row < mat.rows; ++row) {
                     const uchar* src = mat.ptr<uchar>(row);
                     uchar* dst = image.scanLine(row);
@@ -281,11 +311,11 @@ QImage MainWindow::MatToQImage(const cv::Mat& mat)
                 return image;
             }
 
-            case 3: {  // BGRÍ¼
+            case 3: {  // BGRå›¾
                 QImage image(mat.cols, mat.rows, QImage::Format_RGB888);
                 if (image.isNull()) return QImage();
 
-                // °²È«×ª»»BGR->RGB
+                // å®‰å…¨è½¬æ¢BGR->RGB
                 for (int row = 0; row < mat.rows; ++row) {
                     const cv::Vec3b* src = mat.ptr<cv::Vec3b>(row);
                     uchar* dst = image.scanLine(row);
@@ -301,11 +331,11 @@ QImage MainWindow::MatToQImage(const cv::Mat& mat)
                 return image;
             }
 
-            case 4: {  // BGRAÍ¼
+            case 4: {  // BGRAå›¾
                 QImage image(mat.cols, mat.rows, QImage::Format_ARGB32);
                 if (image.isNull()) return QImage();
 
-                // °²È«×ª»»BGRA->ARGB
+                // å®‰å…¨è½¬æ¢BGRA->ARGB
                 for (int row = 0; row < mat.rows; ++row) {
                     const cv::Vec4b* src = mat.ptr<cv::Vec4b>(row);
                     QRgb* dst = reinterpret_cast<QRgb*>(image.scanLine(row));
@@ -331,10 +361,10 @@ QImage MainWindow::MatToQImage(const cv::Mat& mat)
             }
             };
 
-        // Ö´ĞĞ×ª»»
+        // æ‰§è¡Œè½¬æ¢
         QImage result = safeConvert(localMat);
 
-        // ×îÖÕÑéÖ¤
+        // æœ€ç»ˆéªŒè¯
         if (result.isNull()) {
             qWarning() << "Final conversion failed for matrix type:" << localMat.type();
         }
@@ -357,25 +387,25 @@ QImage MainWindow::MatToQImage(const cv::Mat& mat)
 }
 
 void MainWindow::display_MatInQT(QLabel* label, const cv::Mat& mat) {
-    // 0. Ïß³Ì°²È«ÑéÖ¤
+    // 0. çº¿ç¨‹å®‰å…¨éªŒè¯
     if (QThread::currentThread() != qApp->thread()) {
         QMetaObject::invokeMethod(this, [=]() {
             display_MatInQT(label, mat);
-            }, Qt::QueuedConnection); // ¸ÄÎª·Ç×èÈûÊ½
+            }, Qt::QueuedConnection); // æ”¹ä¸ºéé˜»å¡å¼
         return;
     }
 
-    // 1. ×ª»»Îª×Ô³ÖÄÚ´æµÄQImage
-    QImage qimg = MatToQImage(mat); // µ÷ÓÃstatic³ÉÔ±º¯Êı
+    // 1. è½¬æ¢ä¸ºè‡ªæŒå†…å­˜çš„QImage
+    QImage qimg = MatToQImage(mat); // è°ƒç”¨staticæˆå‘˜å‡½æ•°
     if (qimg.isNull()) return;
 
-    // 2. Ö±½Ó´´½¨QPixmap
+    // 2. ç›´æ¥åˆ›å»ºQPixmap
     QPixmap pixmap = QPixmap::fromImage(qimg);
     if (pixmap.isNull()) return;
 
-    // 3. ÏÔÊ¾²Ù×÷
+    // 3. æ˜¾ç¤ºæ“ä½œ
     QPixmap scaledPixmap = pixmap.scaled(
-        label->width(), label->height(), // Ê¹ÓÃwidth/height¸ü¿É¿¿
+        label->width(), label->height(), // ä½¿ç”¨width/heightæ›´å¯é 
         Qt::KeepAspectRatio,
         Qt::SmoothTransformation
     );
@@ -402,190 +432,157 @@ void MainWindow::on_esc_pressed()
     }
 }
 
-void MainWindow::startOllamaInteraction()
-{
-    QString prompt = ui->lineEdit_prompt->text().trimmed();
-    if (prompt.isEmpty()) {
-        QMessageBox::warning(this, tr("¾¯¸æ"), tr("ÌáÊ¾´Ê²»ÄÜÎª¿Õ£¡"));
-        return;
-    }
+//void MainWindow::startOllamaInteraction()
+//{
+//    QString prompt = ui->lineEdit_prompt->text().trimmed();
+//    if (prompt.isEmpty()) {
+//        QMessageBox::warning(this, tr("è­¦å‘Š"), tr("æç¤ºè¯ä¸èƒ½ä¸ºç©ºï¼"));
+//        return;
+//    }
+//
+//    QUrl url("http://localhost:11434/api/generate");
+//    QNetworkRequest request(url);
+//    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+//
+//    QJsonObject json;
+//    json.insert("model", "deepseek-r1:1.5b");
+//    json.insert("prompt", prompt);
+//    json.insert("max_tokens", 150);
+//
+//    QNetworkReply* reply = networkManager->post(request, QJsonDocument(json).toJson());
+//
+//    connect(reply, &QNetworkReply::finished, this, [this, reply, prompt]() {
+//        QString response;
+//        if (reply->error() == QNetworkReply::NoError) {
+//            QByteArray responseData = reply->readAll();
+//            response = parseOllamaResponse(responseData);
+//        }
+//        else {
+//            qDebug() << "ç½‘ç»œé”™è¯¯:" << reply->errorString();
+//            ui->textEdit_result->setText("ç½‘ç»œé”™è¯¯: " + reply->errorString());
+//            return;
+//        }
+//
+//        QStringList lines = response.split("\n");
+//        QString result, resp;
+//        for (const QString& line : lines) {
+//            QJsonParseError error;
+//            QJsonDocument doc = QJsonDocument::fromJson(line.toUtf8(), &error);
+//            if (error.error == QJsonParseError::NoError && doc.isObject()) {
+//                QJsonObject obj = doc.object();
+//                if (obj.contains("response") && obj.contains("done")) {
+//                    bool done = obj["done"].toBool();
+//                    resp = obj["response"].toString();
+//                    result += resp;
+//                    if (done) break;
+//                }
+//            }
+//        }
+//
+//        // æ˜¾ç¤ºç»“æœ
+//        ui->textEdit_result->setText(result);
+//
+//        // ä¿å­˜å†å²
+//        ollamaHistory.append(qMakePair(prompt, result));
+//        ui->listWidget_history->addItem(prompt.left(30)); // æ˜¾ç¤ºå‰30ä¸ªå­—ç¬¦
+//        // ? æ¸…ç©ºè¾“å…¥æ¡†
+//        ui->lineEdit_prompt->clear();
+//        });
+//}
+//
+//void MainWindow::on_historyItemClicked(QListWidgetItem* item)
+//{
+//    int index = ui->listWidget_history->row(item);
+//    if (index >= 0 && index < ollamaHistory.size()) {
+//        QString q = ollamaHistory[index].first;
+//        QString a = ollamaHistory[index].second;
+//        ui->textEdit_result->setText("Q: " + q + "\n\nA: " + a);
+//    }
+//}
+//
 
-    QUrl url("http://localhost:11434/api/generate");
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-    QJsonObject json;
-    json.insert("model", "deepseek-r1:1.5b");
-    json.insert("prompt", prompt);
-    json.insert("max_tokens", 150);
-
-    QNetworkReply* reply = networkManager->post(request, QJsonDocument(json).toJson());
-
-    connect(reply, &QNetworkReply::finished, this, [this, reply, prompt]() {
-        QString response;
-        if (reply->error() == QNetworkReply::NoError) {
-            QByteArray responseData = reply->readAll();
-            response = parseOllamaResponse(responseData);
-        }
-        else {
-            qDebug() << "ÍøÂç´íÎó:" << reply->errorString();
-            ui->textEdit_result->setText("ÍøÂç´íÎó: " + reply->errorString());
-            return;
-        }
-
-        QStringList lines = response.split("\n");
-        QString result, resp;
-        for (const QString& line : lines) {
-            QJsonParseError error;
-            QJsonDocument doc = QJsonDocument::fromJson(line.toUtf8(), &error);
-            if (error.error == QJsonParseError::NoError && doc.isObject()) {
-                QJsonObject obj = doc.object();
-                if (obj.contains("response") && obj.contains("done")) {
-                    bool done = obj["done"].toBool();
-                    resp = obj["response"].toString();
-                    result += resp;
-                    if (done) break;
-                }
-            }
-        }
-
-        // ÏÔÊ¾½á¹û
-        ui->textEdit_result->setText(result);
-
-        // ±£´æÀúÊ·
-        ollamaHistory.append(qMakePair(prompt, result));
-        ui->listWidget_history->addItem(prompt.left(30)); // ÏÔÊ¾Ç°30¸ö×Ö·û
-        // ? Çå¿ÕÊäÈë¿ò
-        ui->lineEdit_prompt->clear();
-        });
-}
-
-void MainWindow::on_historyItemClicked(QListWidgetItem* item)
-{
-    int index = ui->listWidget_history->row(item);
-    if (index >= 0 && index < ollamaHistory.size()) {
-        QString q = ollamaHistory[index].first;
-        QString a = ollamaHistory[index].second;
-        ui->textEdit_result->setText("Q: " + q + "\n\nA: " + a);
-    }
-}
-
-void MainWindow::on_pushButton_toPage4_clicked()
-{
-
-    QLabel* label_on_page4 = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
-    if (label_on_page4 && image.data) {
-        display_MatInQT(label_on_page4, image);
-    }
-    ui->stackedWidget->setCurrentIndex(3);
-
-}
-
-void MainWindow::on_pushButton_addFavorite_clicked()
-{
-    int index = ui->listWidget_history->currentRow();
-    if (index < 0 || index >= ollamaHistory.size()) {
-        QMessageBox::warning(this, tr("ÌáÊ¾"), tr("ÇëÏÈÑ¡ÔñÒ»ÌõÀúÊ·¼ÇÂ¼¡£"));
-        return;
-    }
-
-    auto pair = ollamaHistory[index];
-
-    // ¾«×¼È¥ÖØ£ºprompt ºÍ response ¶¼±ØĞëÆ¥Åä
-    for (const auto& existing : favoritesHistory) {
-        if (existing.first == pair.first && existing.second == pair.second) {
-            return;
-        }
-    }
-
-    favoritesHistory.append(pair);
-
-    auto* item = new QListWidgetItem(pair.first.left(30));
-    // ? ÉèÖÃÍêÕû prompt ºÍ response ×÷Îª UserRole+UserRole+1
-    item->setData(Qt::UserRole, pair.first);
-    item->setData(Qt::UserRole + 1, pair.second);
-    ui->listWidget_favorites->addItem(item);
-
-    saveFavoritesHistory();
-}
-
-void MainWindow::on_pushButton_removeFavorite_clicked()
-{
-    int index = ui->listWidget_favorites->currentRow();
-    if (index < 0 || index >= ui->listWidget_favorites->count())
-        return;
-
-    QListWidgetItem* item = ui->listWidget_favorites->item(index);
-    QString prompt = item->data(Qt::UserRole).toString();
-    QString response = item->data(Qt::UserRole + 1).toString();
-
-    // µ¯´°È·ÈÏ
-    auto confirm = QMessageBox::question(this, tr("È·ÈÏÒÆ³ıÊÕ²Ø"),
-        tr("ÄãÈ·¶¨ÒªÒÆ³ıÕâÌõÊÕ²Ø¼ÇÂ¼Âğ£¿\n\nPrompt:\n%1\n\nResponse:\n%2")
-        .arg(prompt.left(100)).arg(response.left(100)),
-        QMessageBox::Yes | QMessageBox::No);
-
-    if (confirm != QMessageBox::Yes)
-        return;
-
-    // °²È«É¾³ıËùÓĞÍêÈ«Æ¥ÅäÏî£¨·ÀÖ¹ÓĞÖØ¸´£©
-    favoritesHistory.erase(std::remove_if(favoritesHistory.begin(), favoritesHistory.end(),
-        [&](const QPair<QString, QString>& pair) {
-            return pair.first == prompt && pair.second == response;
-        }), favoritesHistory.end());
-
-    delete ui->listWidget_favorites->takeItem(index);
-    saveFavoritesHistory();
-}
-
-void MainWindow::on_favoriteItemClicked(QListWidgetItem* item)
-{
-    QString prompt = item->data(Qt::UserRole).toString();
-    QString response = item->data(Qt::UserRole + 1).toString();
-    ui->textEdit_result->setText("Q: " + prompt + "\n\nA: " + response);
-}
+//
+//void MainWindow::on_pushButton_addFavorite_clicked()
+//{
+//    int index = ui->listWidget_history->currentRow();
+//    if (index < 0 || index >= ollamaHistory.size()) {
+//        QMessageBox::warning(this, tr("æç¤º"), tr("è¯·å…ˆé€‰æ‹©ä¸€æ¡å†å²è®°å½•ã€‚"));
+//        return;
+//    }
+//
+//    auto pair = ollamaHistory[index];
+//
+//    // ç²¾å‡†å»é‡ï¼šprompt å’Œ response éƒ½å¿…é¡»åŒ¹é…
+//    for (const auto& existing : favoritesHistory) {
+//        if (existing.first == pair.first && existing.second == pair.second) {
+//            return;
+//        }
+//    }
+//
+//    favoritesHistory.append(pair);
+//
+//    auto* item = new QListWidgetItem(pair.first.left(30));
+//    // ? è®¾ç½®å®Œæ•´ prompt å’Œ response ä½œä¸º UserRole+UserRole+1
+//    item->setData(Qt::UserRole, pair.first);
+//    item->setData(Qt::UserRole + 1, pair.second);
+//    ui->listWidget_favorites->addItem(item);
+//
+//    saveFavoritesHistory();
+//}
+//
+//void MainWindow::on_pushButton_removeFavorite_clicked()
+//{
+//    int index = ui->listWidget_favorites->currentRow();
+//    if (index < 0 || index >= ui->listWidget_favorites->count())
+//        return;
+//
+//    QListWidgetItem* item = ui->listWidget_favorites->item(index);
+//    QString prompt = item->data(Qt::UserRole).toString();
+//    QString response = item->data(Qt::UserRole + 1).toString();
+//
+//    // å¼¹çª—ç¡®è®¤
+//    auto confirm = QMessageBox::question(this, tr("ç¡®è®¤ç§»é™¤æ”¶è—"),
+//        tr("ä½ ç¡®å®šè¦ç§»é™¤è¿™æ¡æ”¶è—è®°å½•å—ï¼Ÿ\n\nPrompt:\n%1\n\nResponse:\n%2")
+//        .arg(prompt.left(100)).arg(response.left(100)),
+//        QMessageBox::Yes | QMessageBox::No);
+//
+//    if (confirm != QMessageBox::Yes)
+//        return;
+//
+//    // å®‰å…¨åˆ é™¤æ‰€æœ‰å®Œå…¨åŒ¹é…é¡¹ï¼ˆé˜²æ­¢æœ‰é‡å¤ï¼‰
+//    favoritesHistory.erase(std::remove_if(favoritesHistory.begin(), favoritesHistory.end(),
+//        [&](const QPair<QString, QString>& pair) {
+//            return pair.first == prompt && pair.second == response;
+//        }), favoritesHistory.end());
+//
+//    delete ui->listWidget_favorites->takeItem(index);
+//    saveFavoritesHistory();
+//}
+//
+//void MainWindow::on_favoriteItemClicked(QListWidgetItem* item)
+//{
+//    QString prompt = item->data(Qt::UserRole).toString();
+//    QString response = item->data(Qt::UserRole + 1).toString();
+//    ui->textEdit_result->setText("Q: " + prompt + "\n\nA: " + response);
+//}
 
 
 
-void MainWindow::on_pushButton_gaussian_clicked()
-{
-    /*
-    if (!image.data) {
-        QMessageBox::warning(this, tr("¾¯¸æ"), tr("Î´¼ÓÔØÍ¼Ïñ"));
-        return;
-    }
-    GaussianBlur(image, mat_Gaussian, Size(29, 29), 0, 0);
-    QLabel* label = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
-    if (label)
-        display_MatInQT(label, mat_Gaussian);*/
-}
+//void MainWindow::on_pushButton_gaussian_clicked()
+//{
+//    /*
+//    if (!image.data) {
+//        QMessageBox::warning(this, tr("è­¦å‘Š"), tr("æœªåŠ è½½å›¾åƒ"));
+//        return;
+//    }
+//    GaussianBlur(image, mat_Gaussian, Size(29, 29), 0, 0);
+//    QLabel* label = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
+//    if (label)
+//        display_MatInQT(label, mat_Gaussian);*/
+//}
 
 
-void MainWindow::on_pushButton_gray_clicked()
-{
-    if (!image.data) {
-        QMessageBox::warning(this, tr("¾¯¸æ"), tr("Î´¼ÓÔØÍ¼Ïñ"));
-        return;
-    }
-    cvtColor(image, gray, COLOR_BGR2GRAY);
-    QLabel* label = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
-    if (label)
-        display_MatInQT(label, gray);
-}
 
-void MainWindow::on_pushButton_canny_clicked()
-{
-    if (!image.data) {
-        QMessageBox::warning(this, tr("¾¯¸æ"), tr("Î´¼ÓÔØÍ¼Ïñ"));
-        return;
-    }
-    cvtColor(image, gray, COLOR_BGR2GRAY); // Canny ÒªÇó»Ò¶ÈÍ¼
-    cv::Mat edge;
-    Canny(gray, edge, 100, 150, 3);
-    QLabel* label = ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6");
-    if (label)
-        display_MatInQT(label, edge);
-}
 
 QString MainWindow::parseOllamaResponse(const QByteArray& data)
 {
@@ -683,16 +680,16 @@ void MainWindow::saveFavoritesHistory()
     }
 }
 
-void MainWindow::on_pushButton_search_clicked()
-{
-    QString query = ui->lineEdit_search->text().trimmed();
-    if (query.isEmpty()) {
-        QMessageBox::warning(this, "ÌáÊ¾", "ÇëÊäÈëËÑË÷ÄÚÈİ");
-        return;
-    }
-    currentSearchQuery = query;
-    performWebSearch(query);
-}
+//void MainWindow::on_pushButton_search_clicked()
+//{
+//    QString query = ui->lineEdit_search->text().trimmed();
+//    if (query.isEmpty()) {
+//        QMessageBox::warning(this, "æç¤º", "è¯·è¾“å…¥æœç´¢å†…å®¹");
+//        return;
+//    }
+//    currentSearchQuery = query;
+//    performWebSearch(query);
+//}
 
 void MainWindow::loadFavoritesHistory()
 {
@@ -704,7 +701,7 @@ void MainWindow::loadFavoritesHistory()
         QJsonDocument doc = QJsonDocument::fromJson(data);
         if (doc.isArray()) {
             QJsonArray array = doc.array();
-            QSet<QString> seen; // ÓÃÓÚÈ¥ÖØ
+            QSet<QString> seen; // ç”¨äºå»é‡
             for (const QJsonValue& val : array) {
                 QJsonObject obj = val.toObject();
                 QString prompt = obj["prompt"].toString();
@@ -714,7 +711,7 @@ void MainWindow::loadFavoritesHistory()
                     seen.insert(key);
                     favoritesHistory.append(qMakePair(prompt, response));
 
-                    // ? ´´½¨´øÍêÕûÊı¾İµÄ item
+                    // ? åˆ›å»ºå¸¦å®Œæ•´æ•°æ®çš„ item
                     auto* item = new QListWidgetItem(prompt.left(30));
                     item->setData(Qt::UserRole, prompt);
                     item->setData(Qt::UserRole + 1, response);
@@ -725,137 +722,140 @@ void MainWindow::loadFavoritesHistory()
     }
 }
 
-void MainWindow::handleSearchReply(QNetworkReply* reply)
-{
-    if (reply->error() == QNetworkReply::NoError) {
-        QByteArray responseData = reply->readAll();
-        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+//void MainWindow::handleSearchReply(QNetworkReply* reply)
+//{
+//    if (reply->error() == QNetworkReply::NoError) {
+//        QByteArray responseData = reply->readAll();
+//        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+//
+//        if (!doc.isNull() && doc.isObject()) {
+//            QJsonArray results = doc.object()["results"].toArray();
+//            ui->textBrowser_results->setHtml(formatSearchResults(results));
+//        }
+//        else {
+//            ui->textBrowser_results->setText("æ— æ•ˆçš„å“åº”æ ¼å¼");
+//        }
+//    }
+//    else {
+//        ui->textBrowser_results->setText("æœç´¢å¤±è´¥: " + reply->errorString());
+//    }
+//    reply->deleteLater();
+//}
 
-        if (!doc.isNull() && doc.isObject()) {
-            QJsonArray results = doc.object()["results"].toArray();
-            ui->textBrowser_results->setHtml(formatSearchResults(results));
-        }
-        else {
-            ui->textBrowser_results->setText("ÎŞĞ§µÄÏìÓ¦¸ñÊ½");
-        }
-    }
-    else {
-        ui->textBrowser_results->setText("ËÑË÷Ê§°Ü: " + reply->errorString());
-    }
-    reply->deleteLater();
-}
+//void MainWindow::performWebSearch(const QString& query)
+//{
+//    ui->textBrowser_results->setText("æœç´¢ä¸­...");
+//
+//    QUrl url("http://localhost:8080/search");
+//    QUrlQuery urlQuery;
+//    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(query));
+//    urlQuery.addQueryItem("format", "json");
+//    url.setQuery(urlQuery);
+//
+//    QNetworkRequest request(url);
+//    QNetworkReply* reply = searchManager->get(request);
+//
+//    connect(reply, &QNetworkReply::finished,
+//        this, [this, reply]() { handleSearchReply(reply); });
+//}
 
-void MainWindow::performWebSearch(const QString& query)
-{
-    ui->textBrowser_results->setText("ËÑË÷ÖĞ...");
+//QString MainWindow::formatSearchResults(const QJsonArray& results)
+//{
+//    QString html;
+//    if (results.isEmpty()) {
+//        return "æœªæ‰¾åˆ°ç›¸å…³ç»“æœ";
+//    }
+//
+//    html += "<h2>æœç´¢ç»“æœ:</h2>";
+//    for (int i = 0; i < results.size() && i < 5; ++i) { // é™åˆ¶æ˜¾ç¤º5æ¡ç»“æœ
+//        QJsonObject item = results[i].toObject();
+//        html += QString("<div style='margin-bottom: 15px;'>"
+//            "<h3><a href='%1'>%2</a></h3>"
+//            "<p>%3</p>"
+//            "</div>")
+//            .arg(item["url"].toString())
+//            .arg(item["title"].toString())
+//            .arg(item["content"].toString());
+//    }
+//    return html;
+//}
 
-    QUrl url("http://localhost:8080/search");
-    QUrlQuery urlQuery;
-    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(query));
-    urlQuery.addQueryItem("format", "json");
-    url.setQuery(urlQuery);
+//QString MainWindow::generateRAGPrompt(const QJsonArray& results, const QString& question)
+//{
+//    QString prompt = "åŸºäºä»¥ä¸‹æœç´¢ç»“æœå›ç­”é—®é¢˜ï¼š\n\n";
+//    for (const QJsonValue& result : results) {
+//        QJsonObject item = result.toObject();
+//        prompt += "æ ‡é¢˜: " + item["title"].toString() + "\n";
+//        prompt += "å†…å®¹: " + item["content"].toString() + "\n\n";
+//    }
+//    prompt += "é—®é¢˜: " + question + "\nå›ç­”:";
+//    return prompt;
+//}
 
-    QNetworkRequest request(url);
-    QNetworkReply* reply = searchManager->get(request);
+//QString MainWindow::ragWithOllamaAndSearXNG(const QString& question)
+//{
+//    QUrl url("http://localhost:8080/search");
+//    QUrlQuery urlQuery;
+//    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(question));
+//    urlQuery.addQueryItem("format", "json");
+//    url.setQuery(urlQuery);
+//
+//    QNetworkRequest request(url);
+//    QNetworkReply* reply = networkManager->get(request);
+//
+//    QEventLoop loop;
+//    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+//    loop.exec();
+//
+//    if (reply->error() != QNetworkReply::NoError) {
+//        return "æœç´¢å¤±è´¥: " + reply->errorString();
+//    }
+//
+//    QByteArray responseData = reply->readAll();
+//    QJsonDocument doc = QJsonDocument::fromJson(responseData);
+//    if (doc.isNull() || !doc.isObject()) {
+//        return "æ— æ•ˆçš„æœç´¢ç»“æœæ ¼å¼";
+//    }
+//
+//    QJsonArray results = doc.object()["results"].toArray();
+//    if (results.isEmpty()) {
+//        return "æœªæ‰¾åˆ°ç›¸å…³ä¿¡æ¯";
+//    }
+//
+//    QString prompt = generateRAGPrompt(results, question);
+//    return callOllama(prompt); // ä½¿ç”¨ä½ ç°æœ‰çš„callOllamaå‡½æ•°
+//}
 
-    connect(reply, &QNetworkReply::finished,
-        this, [this, reply]() { handleSearchReply(reply); });
-}
+//QString MainWindow::callOllama(const QString& prompt)
+//{
+//    QNetworkAccessManager networkManager;
+//    QEventLoop loop;
+//
+//    QUrl url("http://localhost:11434/api/generate");
+//    QNetworkRequest request(url);
+//    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+//
+//    QJsonObject json;
+//    json["model"] = "deepseek-r1:8b";
+//    json["prompt"] = prompt;
+//    json["stream"] = false;
+//
+//    QNetworkReply* reply = networkManager.post(request, QJsonDocument(json).toJson());
+//
+//    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+//    loop.exec();
+//
+//    if (reply->error() != QNetworkReply::NoError) {
+//        qDebug() << "Ollama request error:" << reply->errorString();
+//        return "";
+//    }
+//
+//    QByteArray responseData = reply->readAll();
+//    return parseOllamaResponse(responseData);
+//}
 
-QString MainWindow::formatSearchResults(const QJsonArray& results)
-{
-    QString html;
-    if (results.isEmpty()) {
-        return "Î´ÕÒµ½Ïà¹Ø½á¹û";
-    }
 
-    html += "<h2>ËÑË÷½á¹û:</h2>";
-    for (int i = 0; i < results.size() && i < 5; ++i) { // ÏŞÖÆÏÔÊ¾5Ìõ½á¹û
-        QJsonObject item = results[i].toObject();
-        html += QString("<div style='margin-bottom: 15px;'>"
-            "<h3><a href='%1'>%2</a></h3>"
-            "<p>%3</p>"
-            "</div>")
-            .arg(item["url"].toString())
-            .arg(item["title"].toString())
-            .arg(item["content"].toString());
-    }
-    return html;
-}
 
-QString MainWindow::generateRAGPrompt(const QJsonArray& results, const QString& question)
-{
-    QString prompt = "»ùÓÚÒÔÏÂËÑË÷½á¹û»Ø´ğÎÊÌâ£º\n\n";
-    for (const QJsonValue& result : results) {
-        QJsonObject item = result.toObject();
-        prompt += "±êÌâ: " + item["title"].toString() + "\n";
-        prompt += "ÄÚÈİ: " + item["content"].toString() + "\n\n";
-    }
-    prompt += "ÎÊÌâ: " + question + "\n»Ø´ğ:";
-    return prompt;
-}
-
-QString MainWindow::ragWithOllamaAndSearXNG(const QString& question)
-{
-    QUrl url("http://localhost:8080/search");
-    QUrlQuery urlQuery;
-    urlQuery.addQueryItem("q", QUrl::toPercentEncoding(question));
-    urlQuery.addQueryItem("format", "json");
-    url.setQuery(urlQuery);
-
-    QNetworkRequest request(url);
-    QNetworkReply* reply = networkManager->get(request);
-
-    QEventLoop loop;
-    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    loop.exec();
-
-    if (reply->error() != QNetworkReply::NoError) {
-        return "ËÑË÷Ê§°Ü: " + reply->errorString();
-    }
-
-    QByteArray responseData = reply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(responseData);
-    if (doc.isNull() || !doc.isObject()) {
-        return "ÎŞĞ§µÄËÑË÷½á¹û¸ñÊ½";
-    }
-
-    QJsonArray results = doc.object()["results"].toArray();
-    if (results.isEmpty()) {
-        return "Î´ÕÒµ½Ïà¹ØĞÅÏ¢";
-    }
-
-    QString prompt = generateRAGPrompt(results, question);
-    return callOllama(prompt); // Ê¹ÓÃÄãÏÖÓĞµÄcallOllamaº¯Êı
-}
-
-QString MainWindow::callOllama(const QString& prompt)
-{
-    QNetworkAccessManager networkManager;
-    QEventLoop loop;
-
-    QUrl url("http://localhost:11434/api/generate");
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-    QJsonObject json;
-    json["model"] = "deepseek-r1:8b";
-    json["prompt"] = prompt;
-    json["stream"] = false;
-
-    QNetworkReply* reply = networkManager.post(request, QJsonDocument(json).toJson());
-
-    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    loop.exec();
-
-    if (reply->error() != QNetworkReply::NoError) {
-        qDebug() << "Ollama request error:" << reply->errorString();
-        return "";
-    }
-
-    QByteArray responseData = reply->readAll();
-    return parseOllamaResponse(responseData);
-}
 
 
 
