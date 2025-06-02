@@ -11,6 +11,11 @@
 class HandwritingOCROperation : public OCROperation {
 public:
     using OCROperation::OCROperation;
+    PaddleOCREngine* engine = nullptr;
+    HandwritingOCROperation(QPushButton* btn, MainWindow* window): OCROperation(btn, window)
+    {
+        engine = new PaddleOCREngine();
+    }
 
     QString name() const override { return "HandwritingOCR"; }
 
@@ -36,8 +41,8 @@ public:
             QString tempPath = "temp_ocr.jpg";
             cv::imwrite(tempPath.toStdString(), windowPtr->image);
 
-            PaddleOCREngine engine;
-            auto results = engine.process(tempPath.toStdString());
+            
+            auto results = engine->process(tempPath.toStdString());
 
             QString output;
             for (const auto& line : results) {
