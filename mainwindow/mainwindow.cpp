@@ -183,8 +183,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    ui->label->clear();
-    ui->label_1->clear();
+    /*ui->label->clear();
+    ui->label_1->clear();*/
     QString filename = QFileDialog::getOpenFileName(this, tr("打开图片"), ".", tr("Image file(*.png *.jpg *.bmp)"));
     image = cv::imread(filename.toLocal8Bit().data());
     if (image.data) {
@@ -223,7 +223,7 @@ void MainWindow::on_pushButton_3_clicked()
 
 void MainWindow::on_pushButton_4_clicked()
 {
-    auto reply = QMessageBox::question(this, tr("退出确认"), tr("你确定要退出程序吗？"),
+    auto reply = QMessageBox::question(this, tr("Confirm Exit"), tr("Are you sure you want to quit the program?"),
         QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes) {
         QApplication::quit();
@@ -244,18 +244,18 @@ void MainWindow::on_pushButton_toPage4_clicked()
 void MainWindow::on_pushButton_history_clicked()
 {
     if (imagePathHistory.isEmpty()) {
-        QMessageBox::information(this, tr("提示"), tr("没有历史记录！"), QMessageBox::Ok);
+        QMessageBox::information(this, tr("Prompt"), tr("No history found!"), QMessageBox::Ok);
         return;
     }
 
-    QString selected = QInputDialog::getItem(this, tr("历史图片"), tr("选择一个历史图片路径:"), imagePathHistory, 0, false);
+    QString selected = QInputDialog::getItem(this, tr("Historical images"), tr("Select a historical image path:"), imagePathHistory, 0, false);
     if (!selected.isEmpty() && QFile::exists(selected)) {
         image = cv::imread(selected.toLocal8Bit().data());
         if (image.data) {
             display_MatInQT(ui->label, image);
         }
         else {
-            QMessageBox::warning(this, tr("错误"), tr("无法加载该图片！"));
+            QMessageBox::warning(this, tr("Error"), tr("Failed to load the image!"));
         }
     }
 }

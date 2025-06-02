@@ -37,7 +37,7 @@ public:
     }
 
     // 工具名称：高斯模糊
-    QString name() const override { return "GaussianBlur"; }
+    QString name() const override { return "Canny"; }
 
     // 具体处理方法：实现模糊效果
     void process() override {
@@ -55,7 +55,7 @@ public:
         //// 实际处理代码（使用OpenCV）
         cv::Mat mat;
         cv::Canny(windowPtr->image, mat, 100, 150, 3);
-        QMessageBox::warning(qApp->activeWindow(), "Process", windowPtr->ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6")->objectName());
+        /*QMessageBox::warning(qApp->activeWindow(), "Process", windowPtr->ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6")->objectName());*/
         windowPtr->display_MatInQT(windowPtr->ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6"), mat);
     }
     void connectTrigger() override {
