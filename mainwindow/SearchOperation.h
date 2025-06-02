@@ -1,22 +1,19 @@
 #pragma once
-#include <QObject>
-#include <QPushButton>
-//#include "mainwindow.h"
-class MainWindow;
-class SearchOperation : public QObject {
+// SearchOperation.h
+#pragma once
+#include "operationbase.h"
+
+class SearchOperation : public OperationBase {
     Q_OBJECT
 public:
-    explicit SearchOperation(QPushButton* btn = nullptr, MainWindow* window = nullptr)
-        : m_associatedButton(btn), windowPtr(window) {
-    }
+    // 使用基类的构造函数
+    using OperationBase::OperationBase;
 
-    virtual QString name() const = 0;
-    virtual void processor() = 0;
-    virtual void setButton() = 0;
-    virtual void connectTrigger() = 0;
-    virtual ~SearchOperation() = default;
+    // 保持原有的纯虚函数声明
+    virtual QString name() const override = 0;
+    virtual void processor() override = 0;
+    virtual void setButton() override = 0;
+    virtual void connectTrigger() override = 0;
 
-protected:
-    QPushButton* m_associatedButton;
-    MainWindow* windowPtr;
+    // 析构函数可以省略，因为基类已有默认实现
 };

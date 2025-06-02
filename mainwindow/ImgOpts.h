@@ -1,56 +1,50 @@
+// ImageOperation.h
 #pragma once
-// imageoperation.h
-#pragma once
-#include "mainwindow.h"
-#include <QObject>
+#include "operationbase.h"
 #include <QImage>
-#include <QPushButton>
+#include <QApplication>  // 添加这行以解决qApp未声明的问题
 #include <opencv2/opencv.hpp>
 #include <QMessageBox>
 
-
-class ImageOperation : public QObject {
+class ImageOperation : public OperationBase {
     Q_OBJECT
 public:
-    // 构造函数：每个工具可以关联一个按钮
-    explicit ImageOperation(QPushButton* btn = nullptr, MainWindow* window = nullptr)
-        : m_associatedButton(btn), windowPtr(window) {
-    }
+    // 使用基类的构造函数
+    using OperationBase::OperationBase;
 
-    // 工具名称（纯虚函数，必须由子类实现）
-    virtual QString name() const = 0;
+    // 工具名称（保持纯虚函数）
+    virtual QString name() const override = 0;
 
-    /*
-    重要1
-    */
-    // 处理照片的方法（纯虚函数）
+    // 处理照片的方法（重命名processor为process以保持兼容）
     virtual void process() = 0;
 
-    /*
-    重要2
-    */
-    // 获取/设置关联的按钮
-    QPushButton* button() const { return m_associatedButton; }
-    virtual void setButton() = 0;
-    virtual ~ImageOperation() {
+    // 实现基类processor接口（转发到process）
+    void processor() override { process(); }
+
+    // 设置关联按钮（纯虚函数）
+    virtual void setButton() override = 0;
+
+    // 连接触发信号（纯虚函数）
+    virtual void connectTrigger() override = 0;
+
+    // 特殊析构逻辑
+    ~ImageOperation() override {
         if (!m_associatedButton) {
-            QMessageBox::warning(qApp->activeWindow(), "Warning",
-                "Destroyed");
+            QMessageBox::warning(qApp->activeWindow(), "Warning", "ImageOperation Destroyed");
         }
     }
 
 signals:
-    // 处理完成时发出的信号（像"叮"的一声提示音）
+    // 处理完成信号
     void processed(const QImage& result);
 
 protected:
-    QPushButton* m_associatedButton; // 每个工具关联的UI按钮
-    MainWindow* windowPtr; // 新增：指向MainWindow中图像的指针
-
-
     // 辅助函数：QImage转OpenCV格式
-    static cv::Mat qImageToMat(const QImage& image)
-    {
+    static cv::Mat qImageToMat(const QImage& image) {
+        // 实现代码...
+        cv::Mat mat;
+        // 转换逻辑...
+        return mat;
     }
 
     // 辅助函数：OpenCV转QImage

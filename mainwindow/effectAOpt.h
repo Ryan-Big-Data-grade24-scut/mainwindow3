@@ -52,7 +52,7 @@ public:
             QMessageBox::warning(qApp->activeWindow(), "Error", "No image loaded!");
             return;
         }
-
+        
         //// 实际处理代码（使用OpenCV）
         cv::Mat labImage, claheImage;
         cv::cvtColor(windowPtr->image, labImage, cv::COLOR_BGR2Lab);
@@ -71,5 +71,10 @@ public:
 
         windowPtr->display_MatInQT(windowPtr->ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6"), blended);
         return;
+    }
+    void connectTrigger() override {
+        if (m_associatedButton) {
+            connect(m_associatedButton, &QPushButton::clicked, this, &effectAOperation::process);
+        }
     }
 };

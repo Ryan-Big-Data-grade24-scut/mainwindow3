@@ -56,4 +56,9 @@ public:
         windowPtr->display_MatInQT(windowPtr->ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6"), mat);
         return;
     }
+    void connectTrigger() override {
+        if (m_associatedButton) {
+            connect(m_associatedButton, &QPushButton::clicked, this, &GrayOperation::process);
+        }
+    }
 };

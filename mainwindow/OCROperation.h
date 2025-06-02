@@ -1,21 +1,24 @@
+// OCROperation.h
 #pragma once
-#include <QObject>
-#include <QPushButton>
-#include "mainwindow.h"
+#include "operationbase.h"
 
-class OCROperation {
+class OCROperation : public OperationBase {
 public:
-	explicit OCROperation(QPushButton* btn, MainWindow* window)
-		: m_associatedButton(btn), windowPtr(window) {
-	}
-	virtual ~OCROperation() {}
+    // 使用基类的构造函数
+    using OperationBase::OperationBase;
 
-	virtual QString name() const = 0;
-	virtual void setButton() = 0;
-	virtual void connectTrigger() = 0;
-	virtual void processor() = 0;
+    // 工具名称（纯虚函数）
+    virtual QString name() const override = 0;
 
-protected:
-	QPushButton* m_associatedButton;
-	MainWindow* windowPtr;
+    // 设置关联按钮（纯虚函数）
+    virtual void setButton() override = 0;
+
+    // 连接触发信号（纯虚函数）
+    virtual void connectTrigger() override = 0;
+
+    // 处理函数（纯虚函数）
+    virtual void processor() override = 0;
+
+    // 析构函数（保持空实现）
+    virtual ~OCROperation() override = default;
 };

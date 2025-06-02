@@ -191,6 +191,9 @@
     <QtMoc Include="OCRProcessor.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="operationbase.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

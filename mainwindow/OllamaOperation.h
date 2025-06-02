@@ -1,24 +1,20 @@
+// OllamaOperation.h
 #pragma once
-#include <QObject>
-#include <QPushButton>
-#include "mainwindow.h"
+#include "operationbase.h"
 
-class OllamaOperation : public QObject {
+class OllamaOperation : public OperationBase {
     Q_OBJECT
 public:
-    explicit OllamaOperation(QPushButton* btn = nullptr, MainWindow* window = nullptr)
-        : m_associatedButton(btn), windowPtr(window) {
-    }
+    // 使用基类的构造函数
+    using OperationBase::OperationBase;
 
-    virtual void processor() = 0;
-    virtual QString name() const = 0;
-    virtual void setButton() = 0;
+    // 保持原有的纯虚函数声明（添加override关键字）
+    virtual void processor() override = 0;
+    virtual QString name() const override = 0;
+    virtual void setButton() override = 0;
+    virtual void connectTrigger() override = 0;
 
-    virtual void connectTrigger() = 0;
-    QPushButton* button() const { return m_associatedButton; }
-    virtual ~OllamaOperation() = default;
+    // button() 方法已从基类继承，无需重复声明
 
-protected:
-    QPushButton* m_associatedButton;
-    MainWindow* windowPtr;
+    // 析构函数可以省略，因为基类已有默认实现
 };

@@ -58,5 +58,10 @@ public:
         QMessageBox::warning(qApp->activeWindow(), "Process", windowPtr->ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6")->objectName());
         windowPtr->display_MatInQT(windowPtr->ui->stackedWidget->widget(3)->findChild<QLabel*>("label_6"), mat);
     }
+    void connectTrigger() override {
+        if (m_associatedButton) {
+            connect(m_associatedButton, &QPushButton::clicked, this, &CannyOperation::process);
+        }
+    }
 };
 #pragma once

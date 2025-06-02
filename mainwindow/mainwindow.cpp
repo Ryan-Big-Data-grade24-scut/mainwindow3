@@ -84,7 +84,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // 按钮绑定
     connect(ui->pushButton_toPage4, &QPushButton::clicked, this, &MainWindow::on_pushButton_toPage4_clicked);
-    connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::on_pushButton_clicked);
+    /*connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::on_pushButton_clicked);*/
     //connect(ui->pushButton_ollama, &QPushButton::clicked, this, &MainWindow::startOllamaInteraction);
     //connect(ui->listWidget_history, &QListWidget::itemClicked, this, &MainWindow::on_historyItemClicked);
     //connect(ui->lineEdit_prompt, &QLineEdit::returnPressed, this, &MainWindow::startOllamaInteraction); // 新增
